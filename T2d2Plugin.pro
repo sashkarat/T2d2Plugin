@@ -6,7 +6,7 @@
 
 CONFIG -= Qt
 
-TARGET = t2d2Plugin
+TARGET = t2d2plugin
 TEMPLATE = lib
 
 DEFINES += T2D2PLUGIN_LIBRARY
@@ -30,7 +30,9 @@ SOURCES += \
     poly2tri_f/sweep/sweep.cc \
     poly2tri_f/sweep/sweep_context.cc \
     poly2tri_f/common/shapes.cc \
-    t2d2plugin.cpp
+    t2d2plugin.cpp \
+    t2d2/log.cpp \
+    t2d2/polygon.cpp
 
 HEADERS += \
     clipperlib_f/clipper.hpp \
@@ -41,17 +43,33 @@ HEADERS += \
     poly2tri_f/sweep/sweep_context.h \
     poly2tri_f/common/shapes.h \
     poly2tri_f/common/utils.h \
-    t2d2plugin.h
+    t2d2plugin.h \
+    t2d2/log.h \
+    t2d2/polygon.h
 
 android {
-    message(ANDROID SPEC)
+    #message(ANDROID SPEC)
     DEFINES += T2D2_ANDROID_SPEC
     LIBS += -lsupc++ -lgnustl_static
 }
 
 win32 {
-    message(WIN SPEC)
+    #message(WIN SPEC)
+
+    INST_SDK_PATH = "../t2d2tplug_sdk"
+
     DEFINES += T2D2_WIN_SPEC
+
+    DLLDESTDIR = "c:/Libs"
+
+    target.path += $${INST_SDK_PATH}
+    HEADERS_TO_SDK.path = $${INST_SDK_PATH}
+    HEADERS_TO_SDK.files += t2d2plugin.h
+
+    DLL_TO_UNITY.path="w:/Unity/Terra2d2-dev/Assets/Plugins/x86_64"
+    DLL_TO_UNITY.files=$${DLLDESTDIR}/$${TARGET}.dll
+
+    INSTALLS += target HEADERS_TO_SDK DLL_TO_UNITY
 }
 
 

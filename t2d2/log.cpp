@@ -1,12 +1,25 @@
-#include "t2d2log.h"
+#include "log.h"
+#include <ostream>
 
 using namespace  t2d2;
 
-T2d2Log::T2d2Log()
-{
+LogCallback Log::ms_logCallback = nullptr;
 
+Log::Log()
+{
 }
 
-T2d2Log::~T2d2Log()
+Log::~Log()
 {
+    std::cout<<m_ss.str()<<std::endl;
+
+    if (ms_logCallback != nullptr) {
+        m_ss<<std::endl;
+        ms_logCallback(m_ss.str().c_str());
+    }
+}
+
+void Log::setCallback(LogCallback lcb)
+{
+    ms_logCallback = lcb;
 }
