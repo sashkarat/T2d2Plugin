@@ -37,8 +37,9 @@ extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupGetPolygon     (T2d2Hndl pg);
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupAddPolygon     (T2d2Hndl pg);
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeletePolygon  (T2d2Hndl pg, T2d2Hndl poly);
 
-extern "C" T2D2_EXPORT void     t2d2_polygonGroupAllocateMCash  (T2d2Hndl pg, int stride, int subMeshNumber);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupAllocateMCash  (T2d2Hndl pg, int stride, int subMeshNumber);
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupMeshCash       (T2d2Hndl pg);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupFreeMeshCash   (T2d2Hndl pg);
 
 // polygon func
 

@@ -17,7 +17,7 @@ class PolygonGroup
 public :
 
     PolygonGroup() : m_polygon(nullptr), m_mCash(nullptr) {}
-    ~PolygonGroup() { freeCash(); deletePolygons(); }
+    ~PolygonGroup() { freeMCash(); deletePolygons(); }
 
     Polygon*    polygon() {return m_polygon;}
     Polygon*    addPolygon();
@@ -27,8 +27,9 @@ public :
 
     MCash *mcash() const;
 
+    void freeMCash();
+
 protected:
-    void freeCash();
     void deletePolygons();
 };
 

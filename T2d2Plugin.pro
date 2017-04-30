@@ -78,7 +78,7 @@ win32 {
     HEADERS_TO_SDK.path = $${INST_SDK_PATH}
     HEADERS_TO_SDK.files += t2d2plugin.h
 
-    DLL_TO_UNITY.path="w:/Unity/Terra2d2-dev/Assets/Plugins/x86_64"
+    DLL_TO_UNITY.path="../../../Unity/Terra2d2-dev/Assets/Plugins/x86_64"
     DLL_TO_UNITY.files=$${DLLDESTDIR}/$${TARGET}.dll
 
     INSTALLS += target HEADERS_TO_SDK DLL_TO_UNITY

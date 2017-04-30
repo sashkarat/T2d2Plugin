@@ -99,7 +99,7 @@ void Polygon::deleteHole(unsigned int index)
 
 unsigned int Polygon::triNumber()
 {
-    return static_cast<unsigned>(m_triangles.size());
+    return static_cast<unsigned int>(m_triangles.size());
 }
 
 p2t::Triangle *Polygon::tri(int index)
@@ -121,7 +121,6 @@ void Polygon::triangulate()
     m_triangles = p->GetTriangles();
 
     delete p;
-
 }
 
 void Polygon::deleteTriangles()

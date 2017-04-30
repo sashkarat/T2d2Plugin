@@ -99,8 +99,10 @@ void MCash::allocate(int stride, PolygonGroup *pg, int subMeshNum)
 
     poly = m_allocPg->polygon();
     while (poly != nullptr) {
-        allocSetVerticesData(poly);
-        allocSetTrianglesData(poly);
+        if (poly->genMesh()) {
+            allocSetVerticesData (poly);
+            allocSetTrianglesData(poly);
+        }
         poly = poly->next();
     }
 
@@ -143,6 +145,8 @@ void MCash::allocAddPolygon(Polygon *poly)
 
     for(int i = 0; i < poly->holesCount(); i++)
         allocAddContour(poly->hole(i));
+
+    poly->triangulate();
 
     poly->setCashTriOffset(m_smTriangles[poly->subMeshIndex()].m_triNum);
     m_smTriangles[poly->subMeshIndex()].m_triNum += poly->triNumber();

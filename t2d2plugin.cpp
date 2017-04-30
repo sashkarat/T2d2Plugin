@@ -59,9 +59,10 @@ void t2d2_polygonGroupDeletePolygon(T2d2Hndl pg, T2d2Hndl poly)
 }
 
 
-void t2d2_polygonGroupAllocateMCash(T2d2Hndl pg, int stride, int subMeshNumber)
+T2d2Hndl t2d2_polygonGroupAllocateMCash(T2d2Hndl pg, int stride, int subMeshNumber)
 {
      _CAST_2POLY_G(pg)->allocCash(stride, subMeshNumber);
+     return _CAST_2POLY_G(pg)->mcash();
 }
 
 
@@ -70,6 +71,10 @@ T2d2Hndl t2d2_polygonGroupMeshCash(T2d2Hndl pg)
      return _CAST_2POLY_G(pg)->mcash();
 }
 
+void t2d2_polygonGroupFreeMeshCash(T2d2Hndl pg)
+{
+    _CAST_2POLY_G(pg)->freeMCash();
+}
 
 //===============================================================
 
@@ -270,6 +275,8 @@ void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *
 {
     t2d2::getBoundingBox(points, length, stride, outMin, outMax);
 }
+
+
 
 
 

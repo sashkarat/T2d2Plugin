@@ -36,7 +36,7 @@ void PolygonGroup::allocCash(int stride, int subMeshNum)
     m_mCash->allocate(stride, this, subMeshNum);
 }
 
-void PolygonGroup::freeCash()
+void PolygonGroup::freeMCash()
 {
     if (m_mCash)
         delete m_mCash;
