@@ -3,39 +3,40 @@
 
 using namespace t2d2;
 
-//======================================================================================
-
-Polygon *PolygonGroup::reset()
+int Polygon::cashTriOffset() const
 {
-    clean();
-    m_polygon = new Polygon();
-    return m_polygon;
+    return m_cashTriOffset;
 }
 
-void PolygonGroup::clean()
+void Polygon::setCashTriOffset(int cashTriOffset)
 {
-    while (m_polygon != nullptr) {
-        Polygon *n = m_polygon->next();
-        delete m_polygon;
-        m_polygon = n;
-    }
-    m_polygon = nullptr;
+    m_cashTriOffset = cashTriOffset;
 }
 
-//=======================================================================================
-
-Polygon::Polygon() : m_first(this), m_prev(nullptr), m_next(nullptr)
+Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(nullptr)
 {
+    m_bbox = new BBox();
+    m_polyGroup = pg;
+    m_contour = new Contour(this, true);
 
+    m_zValue = 0.0f;
+    m_subMeshIndex = 0;
+    m_cashTriOffset = -1;
+
+    m_genMesh = true;
+    m_genCollider = false;
+    m_clippingSubj = true;
+    m_clippingClip = false;
 }
 
 Polygon::~Polygon()
 {
-    cleanPoints(m_contour);
-    for(int i = 0; i < m_holes.size(); i++) {
-        Points &points = m_holes[i];
-        cleanPoints (points);
-    }
+    deleteTriangles();
+
+    delete m_bbox;
+    delete m_contour;
+    for(unsigned int i = 0; i < m_holes.size(); i++)
+        delete m_holes[i];
 }
 
 Polygon *Polygon::prev()
@@ -53,6 +54,97 @@ Polygon *Polygon::first()
     return m_first;
 }
 
+Polygon *Polygon::findLast()
+{
+    Polygon *p = this;
+    while(p->m_next != nullptr)
+        p = p->m_next;
+    return  p;
+}
+
+Contour *Polygon::contour()
+{
+    return m_contour;
+}
+
+int Polygon::holesCount()
+{
+    return static_cast<int>(m_holes.size());
+}
+
+Contour *Polygon::hole(unsigned int index)
+{
+    if (index >= m_holes.size()) {
+        Log(ltWarning)<<__FUNCTION__<<"index is out of range";
+        return nullptr;
+    }
+    return m_holes[index];
+}
+
+Contour *Polygon::addHole()
+{
+    m_holes.push_back( new Contour(this));
+    return m_holes [m_holes.size() - 1];
+}
+
+void Polygon::deleteHole(unsigned int index)
+{
+    if (index >= m_holes.size()) {
+        Log(ltWarning)<<__FUNCTION__<<"index is out of range";
+        return;
+    }
+    delete m_holes[index];
+    m_holes.erase(m_holes.begin()+index);
+}
+
+unsigned int Polygon::triNumber()
+{
+    return static_cast<unsigned>(m_triangles.size());
+}
+
+p2t::Triangle *Polygon::tri(int index)
+{
+    return m_triangles[index];
+}
+
+void Polygon::triangulate()
+{
+    deleteTriangles();
+
+    p2t::CDT *p = new p2t::CDT(m_contour->m_data);
+
+    for(int i = 0; i < m_holes.size(); i++)
+        p->AddHole(m_holes[i]->m_data);
+
+    p->Triangulate();
+
+    m_triangles = p->GetTriangles();
+
+    delete p;
+
+}
+
+void Polygon::deleteTriangles()
+{
+    if (m_triangles.size() == 0)
+        return;
+
+    for(int i = 0; i < m_triangles.size(); i++)
+        delete m_triangles[i];
+    m_triangles.resize(0);
+}
+
+void Polygon::updateBBox()
+{
+    m_bbox->reset();
+    for(unsigned int i = 0; i < m_contour->m_data.size(); i++)
+        m_bbox->update(dynamic_cast<t2d2::Point*>(m_contour->m_data[i]));
+}
+
+BBox &Polygon::bbox()
+{
+    return *m_bbox;
+}
 
 void Polygon::insertNext(Polygon *p)
 {
@@ -83,10 +175,10 @@ void Polygon::exclude(Polygon *p)
     Polygon *pp = p->m_prev;
     Polygon *pn = p->m_next;
 
-    if(pp!= nullptr)
+    if (pp!= nullptr)
         pp->m_next = pn;
 
-    if(pn!= nullptr) {
+    if (pn!= nullptr) {
         pn->m_prev = pp;
         if (pn->m_first == p) {
             pn->m_first = pn;
@@ -94,85 +186,9 @@ void Polygon::exclude(Polygon *p)
         }
     }
 
-
     p->m_prev = nullptr;
     p->m_next = nullptr;
     p->m_first = p;
-}
-
-Points &Polygon::contour()
-{
-    return m_contour;
-}
-
-Points *Polygon::ptrContour()
-{
-    return &m_contour;
-}
-
-int Polygon::holesCount()
-{
-    return static_cast<int>(m_holes.size());
-}
-
-Points &Polygon::hole(int index)
-{
-    return m_holes[index];
-}
-
-Points *Polygon::ptrHole(int index)
-{
-    return & hole (index);
-}
-
-Points &Polygon::addHole()
-{
-    m_holes.push_back(Points());
-    return m_holes [m_holes.size() - 1];
-}
-
-Points *Polygon::ptrAddHole()
-{
-    return & addHole ();
-}
-
-void Polygon::deleteHole(int index)
-{
-    Points &ps = m_holes[index];
-    cleanPoints(ps);
-
-    m_holes.erase(m_holes.begin()+index);
-}
-
-void Polygon::cleanPoints(Points &points)
-{
-    for(int j = 0; j< points.size(); j++)
-        delete points[j];
-    points.resize(0);
-}
-
-void Polygon::cleanPoints(Points &points, int index, int count)
-{
-    if ((index + count) >= points.size() )
-        count = static_cast<int>(points.size()) - index;
-
-    int e = index + count;
-    for(int i = index; i < e; i++) {
-        delete points[i];
-        points[i] = nullptr;
-    }
-}
-
-void Polygon::updateBBox()
-{
-    m_bbox.reset();
-    for(int i = 0; i < m_contour.size(); i++)
-        m_bbox.update(m_contour[i]);
-}
-
-const BBox &Polygon::bbox()
-{
-    return m_bbox;
 }
 
 void Polygon::updateFirst()

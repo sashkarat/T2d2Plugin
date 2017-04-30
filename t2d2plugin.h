@@ -16,32 +16,92 @@
 #endif
 
 typedef void (*LogCallback)(const char *);
+typedef void* T2d2Hndl;
+
+// test func
 
 extern "C" T2D2_EXPORT int t2d2_getAnswer();
 
+// common func
+
+extern "C" T2D2_EXPORT int  t2d2_version();
 extern "C" T2D2_EXPORT void t2d2_setLogCallback(LogCallback lcb);
 extern "C" T2D2_EXPORT void t2d2_echoLog(const char *szStr);
 
-extern "C" T2D2_EXPORT void *t2d2_polygonGroupCreate        ();
-extern "C" T2D2_EXPORT void  t2d2_polygonGroupDelete        (void *pg);
-extern "C" T2D2_EXPORT void *t2d2_polygonGroupGetPolygon    (void *pg);
-extern "C" T2D2_EXPORT void *t2d2_polygonGetFirst           (void *p);
-extern "C" T2D2_EXPORT void *t2d2_polygonGetNext            (void *p);
-extern "C" T2D2_EXPORT void *t2d2_polygonGetPrev            (void *p);
-extern "C" T2D2_EXPORT void  t2d2_polygonDelete             (void *p);
-extern "C" T2D2_EXPORT void *t2d2_polygonAddNew             (void *p);
-extern "C" T2D2_EXPORT void *t2d2_polygonGetContour         (void *p);
-extern "C" T2D2_EXPORT int   t2d2_polygonGetHolesCount      (void *p);
-extern "C" T2D2_EXPORT void *t2d2_polygonGetHole            (void *p, int index);
-extern "C" T2D2_EXPORT void *t2d2_polygonAddHole            (void *p);
-extern "C" T2D2_EXPORT void  t2d2_polygonDeleteHole         (void *p, int index);
-extern "C" T2D2_EXPORT void  t2d2_polygonUpdateBBox         (void *p);
-extern "C" T2D2_EXPORT void  t2d2_polygonGetBBox            (void *p, float *pXMin, float *pXMax, float *pYMin, float *pYMax);
-extern "C" T2D2_EXPORT int   t2d2_pointsGetCount            (void *p);
-extern "C" T2D2_EXPORT void  t2d2_pointsResize              (void *p, int size);
-extern "C" T2D2_EXPORT void  t2d2_pointsGetValueVector2     (void *p, int startIndex, int count, float *out);
-extern "C" T2D2_EXPORT void  t2d2_pointsSetValueVector2     (void *p, int startIndex, float *in, int count);
-extern "C" T2D2_EXPORT void  t2d2_pointsRemove              (void *p, int startIndex, int count);
-extern "C" T2D2_EXPORT void  t2d2_pointsAddValueVector2     (void *p, float *in, int count);
+
+// polygon group func
+
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreate         ();
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupDelete         (T2d2Hndl pg);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupGetPolygon     (T2d2Hndl pg);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupAddPolygon     (T2d2Hndl pg);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeletePolygon  (T2d2Hndl pg, T2d2Hndl poly);
+
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupAllocateMCash  (T2d2Hndl pg, int stride, int subMeshNumber);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupMeshCash       (T2d2Hndl pg);
+
+// polygon func
+
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetFirst            (T2d2Hndl poly);
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetNext             (T2d2Hndl poly);
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetPrev             (T2d2Hndl poly);
+
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetContour          (T2d2Hndl poly);
+extern "C" T2D2_EXPORT unsigned int t2d2_polygonGetHolesCount       (T2d2Hndl poly);
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetHole             (T2d2Hndl poly, unsigned int index);
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonAddHole             (T2d2Hndl poly);
+extern "C" T2D2_EXPORT void         t2d2_polygonDeleteHole          (T2d2Hndl poly, unsigned int index);
+extern "C" T2D2_EXPORT void         t2d2_polygonUpdateBBox          (T2d2Hndl poly);
+extern "C" T2D2_EXPORT void         t2d2_polygonGetBBox             (T2d2Hndl poly, float *out, int stride);
+
+extern "C" T2D2_EXPORT float        t2d2_polygonGetZValue           (T2d2Hndl poly);
+extern "C" T2D2_EXPORT int          t2d2_polygonGetSubMeshIndex     (T2d2Hndl poly);
+
+extern "C" T2D2_EXPORT void         t2d2_polygonSetZValue           (T2d2Hndl poly, float zval);
+extern "C" T2D2_EXPORT void         t2d2_polygonSetSubMeshIndex     (T2d2Hndl poly, int smi);
+
+extern "C" T2D2_EXPORT void         t2d2_polygonGetFlags            (T2d2Hndl poly, bool *flags);
+extern "C" T2D2_EXPORT void         t2d2_polygonSetFlags            (T2d2Hndl poly, bool *flags);
+
+
+// contours func
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourGetLength  (T2d2Hndl cntr);
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourGetValue   (T2d2Hndl cntr,
+                                                             unsigned int startIndex, unsigned int length,
+                                                             float* out, unsigned int stride, bool fillByZValue);
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourSetValue   (T2d2Hndl cntr,
+                                                             unsigned int startIndex,
+                                                             float *in, unsigned int length, int stride);
+
+extern "C" T2D2_EXPORT bool          t2d2_contourRemove     (T2d2Hndl cntr, int startIndex, int count);
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue   (T2d2Hndl cntr, float *in, unsigned int length, unsigned int stride);
+
+
+// mesh cash func
+
+
+extern "C" T2D2_EXPORT unsigned int t2d2_mcashStride            (T2d2Hndl mcash);
+extern "C" T2D2_EXPORT unsigned int t2d2_mcashVertexNumber      (T2d2Hndl mcash);
+extern "C" T2D2_EXPORT unsigned int t2d2_mcashSubMeshNumber     (T2d2Hndl mcash);
+extern "C" T2D2_EXPORT unsigned int t2d2_mcashTriangleNumber    (T2d2Hndl mcash, unsigned int smi);
+extern "C" T2D2_EXPORT void         t2d2_mcashGetVertices       (T2d2Hndl mcash, float *out);
+extern "C" T2D2_EXPORT void         t2d2_mcashGetUv             (T2d2Hndl mcash, float *out);
+extern "C" T2D2_EXPORT void         t2d2_mcashGetIndices        (T2d2Hndl mcash, unsigned int smi, int *out);
+
+// common utility
+
+extern "C" T2D2_EXPORT bool t2d2_utilAlmostEquals               (float a, float b, int maxUlps);
+extern "C" T2D2_EXPORT bool t2d2_utilSegmentIntersect           (float *a, float *b, float *c, float *d);
+extern "C" T2D2_EXPORT bool t2d2_utilPointToSegmentProjection   (float *a, float *b, float *c, float *proj);
+
+extern "C" T2D2_EXPORT bool t2d2_utilContourContains            (float *polyPoints, int length, int stride, float *point);
+extern "C" T2D2_EXPORT int  t2d2_utilEdgeSelfIntersection       (float *points, int length, int stride, int index);
+extern "C" T2D2_EXPORT int  t2d2_utilSegmentContourIntersection (float *segment, int strideS, float *contour, int length, int strideC);
+extern "C" T2D2_EXPORT int  t2d2_utilFindNearestEdge            (float *polyPoints, int length, int stride, float *point, float *out);
+extern "C" T2D2_EXPORT void t2d2_utilBBox                       (float * points, int length, int stride, float *outMin, float *outMax);
+
 
 #endif // T2DPLUGIN_H

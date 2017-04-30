@@ -2,68 +2,35 @@
 #define POLYGON_H
 
 #include <vector>
-#include "poly2tri_f/poly2tri.h"
+#include "t2d2.h"
+#include "../poly2tri_f/common/shapes.h"
 
 namespace t2d2 {
 
-struct Point;
-class Polygon;
-struct BBox;
+class Point;
+class BBox;
+class Contour;
 class PolygonGroup;
 
-struct Point: public p2t::Point {
-    int index;
-    Point() : p2t::Point(), index(-1) {}
-};
 
-typedef std::vector<Point *> Points;
-
-
-struct BBox {
-    float xmin;
-    float ymin;
-    float xmax;
-    float ymax;
-    bool adequate;
-
-    BBox() { reset(); }
-
-    void reset() {
-        xmin = ymin = 1e38f;
-        xmax = ymax = -1e37f;
-    }
-
-    void update(const Point *p) {
-        if ( p->x < xmin)
-            xmin = p->x;
-        if (p->x > xmax)
-            xmax = p->x;
-        if (p->y < ymin)
-            ymin = p->y;
-        if (p->y > ymax)
-            ymax = p->y;
-    }
-};
-
-
-
-class PolygonGroup {
-    t2d2::Polygon *m_polygon;
-public :
-    PolygonGroup() : m_polygon(nullptr) {reset(); }
-    ~PolygonGroup() { clean(); }
-    Polygon *polygon() {return m_polygon;}
-    Polygon *reset();
-    void clean();
-};
+typedef std::vector<p2t::Triangle*>     TrianglePtrVec;
+typedef t2d2::Contour*                  ContourPtr;
+typedef std::vector<t2d2::ContourPtr>   ContourPtrVec;
 
 class Polygon
 {
-    Points              m_contour;
-    std::vector<Points> m_holes;
-    BBox                m_bbox;
+    friend class PolygonGroup;
 
-    //TODO: main flags
+    PolygonGroup*           m_polyGroup;
+    BBox*                   m_bbox;
+    Contour*                m_contour;
+    ContourPtrVec           m_holes;
+    TrianglePtrVec          m_triangles;
+
+    float                   m_zValue;
+    unsigned int            m_subMeshIndex;
+    int                     m_cashTriOffset;
+
     bool                m_genMesh;
     bool                m_genCollider;
     bool                m_clippingSubj;
@@ -71,42 +38,67 @@ class Polygon
 
     //TODO: uv projection system
 
-
-
-
     Polygon *m_first;
     Polygon *m_prev;
     Polygon *m_next;
 
 public:
-    Polygon();
+
+
+
+
+    Polygon(PolygonGroup *pg);
     ~Polygon();
+
     Polygon *prev();
     Polygon *next();
     Polygon *first();
+    Polygon *findLast();
+
+    Contour *contour();
+
+    int     holesCount();
+    Contour* hole(unsigned int index);
+    Contour* addHole();
+    void    deleteHole(unsigned int index);
+
+    unsigned int triNumber();
+    p2t::Triangle*  tri(int index);
+
+    void    triangulate();
+    void    deleteTriangles();
+
+    float            zValue()                   {return m_zValue;}
+    unsigned int     subMeshIndex()             {return m_subMeshIndex;}
+
+    void    setZValue(float v)                  {m_zValue = v;}
+    void    setSubMeshIndex(unsigned int smi)   {m_subMeshIndex = smi;}
+
+
+    void updateBBox();
+    BBox &bbox();
+
+    bool genMesh()      {return m_genMesh;}
+    bool genCollider()  {return m_genCollider;}
+    bool clippingSubj() {return m_clippingSubj;}
+    bool clippingClip() {return m_clippingClip;}
+
+    void setGenMesh         (bool s) {m_genMesh = s;}
+    void setGenCollider     (bool s) {m_genCollider = s;}
+    void setClippingSubj    (bool s) {m_clippingSubj = s;}
+    void setClippingClip    (bool s) {m_clippingClip = s;}
+
+
+    int cashTriOffset() const;
+    void setCashTriOffset(int cashTriOffset);
+
+protected:
 
     void insertNext(Polygon *p);
     void insertPrev(Polygon *p);
 
     static void exclude(Polygon *p);
 
-    Points &contour();
-    Points *ptrContour();
-
-    int holesCount();
-    Points &hole(int index);
-    Points *ptrHole(int index);
-    Points &addHole();
-    Points *ptrAddHole();
-    void deleteHole (int index);
-
-    static void cleanPoints(Points &points);
-    static void cleanPoints(Points &points, int index, int count);
-
-    void updateBBox();
-    const BBox &bbox();
-
-protected:
     void updateFirst();
 
 };

@@ -646,10 +646,10 @@ void exactinit()
     int every_other;
 
     every_other = 1;
-    half = 0.5;
-    epsilon = 1.0;
-    splitter = 1.0;
-    check = 1.0;
+    half = 0.5f;
+    epsilon = 1.0f;
+    splitter = 1.0f;
+    check = 1.0f;
     /* Repeatedly divide `epsilon' by two until it is too small to add to    */
     /*   one without causing roundoff.  (Also check if the sum is equal to   */
     /*   the previous sum, for machines that round up instead of using exact */
@@ -661,24 +661,24 @@ void exactinit()
             splitter *= 2.0;
         }
         every_other = !every_other;
-        check = 1.0 + epsilon;
-    } while ((check != 1.0) && (check != lastcheck));
-    splitter += 1.0;
+        check = 1.0f + epsilon;
+    } while ((check != 1.0f) && (check != lastcheck));
+    splitter += 1.0f;
 
     /* Error bounds for orientation and incircle tests. */
-    resulterrbound = (3.0 + 8.0 * epsilon) * epsilon;
-    ccwerrboundA = (3.0 + 16.0 * epsilon) * epsilon;
-    ccwerrboundB = (2.0 + 12.0 * epsilon) * epsilon;
-    ccwerrboundC = (9.0 + 64.0 * epsilon) * epsilon * epsilon;
-    o3derrboundA = (7.0 + 56.0 * epsilon) * epsilon;
-    o3derrboundB = (3.0 + 28.0 * epsilon) * epsilon;
-    o3derrboundC = (26.0 + 288.0 * epsilon) * epsilon * epsilon;
-    iccerrboundA = (10.0 + 96.0 * epsilon) * epsilon;
-    iccerrboundB = (4.0 + 48.0 * epsilon) * epsilon;
-    iccerrboundC = (44.0 + 576.0 * epsilon) * epsilon * epsilon;
-    isperrboundA = (16.0 + 224.0 * epsilon) * epsilon;
-    isperrboundB = (5.0 + 72.0 * epsilon) * epsilon;
-    isperrboundC = (71.0 + 1408.0 * epsilon) * epsilon * epsilon;
+    resulterrbound = (3.0f + 8.0f * epsilon) * epsilon;
+    ccwerrboundA = (3.0f + 16.0f * epsilon) * epsilon;
+    ccwerrboundB = (2.0f + 12.0f * epsilon) * epsilon;
+    ccwerrboundC = (9.0f + 64.0f * epsilon) * epsilon * epsilon;
+    o3derrboundA = (7.0f + 56.0f * epsilon) * epsilon;
+    o3derrboundB = (3.0f + 28.0f * epsilon) * epsilon;
+    o3derrboundC = (26.0f + 288.0f * epsilon) * epsilon * epsilon;
+    iccerrboundA = (10.0f + 96.0f * epsilon) * epsilon;
+    iccerrboundB = (4.0f + 48.0f * epsilon) * epsilon;
+    iccerrboundC = (44.0f + 576.0f * epsilon) * epsilon * epsilon;
+    isperrboundA = (16.0f + 224.0f * epsilon) * epsilon;
+    isperrboundB = (5.0f + 72.0f * epsilon) * epsilon;
+    isperrboundC = (71.0f + 1408.0f * epsilon) * epsilon * epsilon;
 }
 
 /*****************************************************************************/

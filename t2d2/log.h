@@ -7,25 +7,34 @@ namespace t2d2 {
 
 typedef void (*LogCallback)(const char *);
 
+enum LogType {
+    ltDebug     = 0,
+    ltWarning   = 1,
+    ltError     = 2
+};
+
+
 class Log
 {
+    LogType m_logType;
+
 public:
 
-    Log();
+    Log ();
+    Log (LogType lt);
 
     ~Log();
-
-    static void setCallback(LogCallback lcb);
 
     template <class T> Log &operator<<(const T &v) {
         m_ss<<v<<" ";
         return *this;
     }
 
+    static void setCallback(LogCallback lcb);
+
 private:
     static LogCallback ms_logCallback;
     std::ostringstream m_ss;
-
 };
 
 }

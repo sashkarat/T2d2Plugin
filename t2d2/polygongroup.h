@@ -1,11 +1,37 @@
 #ifndef POLYGONGROUP_H
 #define POLYGONGROUP_H
 
+#include "t2d2.h"
+
+namespace t2d2 {
+
+class Polygon;
+class MCash;
 
 class PolygonGroup
 {
-public:
-    PolygonGroup();
+
+    Polygon *m_polygon;
+    MCash   *m_mCash;
+
+public :
+
+    PolygonGroup() : m_polygon(nullptr), m_mCash(nullptr) {}
+    ~PolygonGroup() { freeCash(); deletePolygons(); }
+
+    Polygon*    polygon() {return m_polygon;}
+    Polygon*    addPolygon();
+    void        deletePolygon(Polygon *p);
+
+    void allocCash(int stride, int subMeshNum);
+
+    MCash *mcash() const;
+
+protected:
+    void freeCash();
+    void deletePolygons();
 };
+
+}
 
 #endif // POLYGONGROUP_H

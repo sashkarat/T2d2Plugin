@@ -59,6 +59,10 @@ struct Point {
   /// Construct using coordinates.
   Point(float x, float y) : x(x), y(y) {}
 
+
+  /// Make Point as polymorphic type
+  virtual ~Point() {}
+
   /// Set this point to all zeros.
   void set_zero()
   {

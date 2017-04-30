@@ -1,7 +1,20 @@
 #include "t2d2plugin.h"
 
-#include "t2d2/log.h"
+#include "t2d2/t2d2.h"
 #include "t2d2/polygon.h"
+
+
+#define T2D2_VERSION    0
+
+#define _CAST_2POLY_G(x)    (static_cast<t2d2::PolygonGroup*>(x))
+#define _CAST_2POLY(x)      (static_cast<t2d2::Polygon*>(x))
+#define _CAST_2CONTOUR(x)   (static_cast<t2d2::Contour*>(x))
+#define _CAST_2MCASH(x)     (static_cast<t2d2::MCash*>(x))
+
+int t2d2_version()
+{
+    return T2D2_VERSION;
+}
 
 void t2d2_setLogCallback(LogCallback lcb)
 {
@@ -18,158 +31,247 @@ int t2d2_getAnswer()
     return 42;
 }
 
-void *t2d2_polygonGroupCreate()
+//===============================================================
+
+T2d2Hndl t2d2_polygonGroupCreate()
 {
     return new t2d2::PolygonGroup();
 }
 
-void t2d2_polygonGroupDelete(void *pg)
+void t2d2_polygonGroupDelete(T2d2Hndl pg)
 {
-    t2d2::PolygonGroup *pgroup = static_cast<t2d2::PolygonGroup *>(pg);
-    delete pgroup;
+    delete _CAST_2POLY_G(pg);
 }
 
-void *t2d2_polygonGroupGetPolygon(void *pg)
+T2d2Hndl t2d2_polygonGroupGetPolygon(T2d2Hndl pg)
 {
-    t2d2::PolygonGroup *pgroup = static_cast<t2d2::PolygonGroup *>(pg);
-    return pgroup->polygon();
+    return _CAST_2POLY_G(pg)->polygon();
 }
 
-void *t2d2_polygonGetFirst(void *p)
+T2d2Hndl t2d2_polygonGroupAddPolygon(T2d2Hndl pg)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->first();
+    return _CAST_2POLY_G(pg)->addPolygon();
 }
 
-void *t2d2_polygonGetNext(void *p)
+void t2d2_polygonGroupDeletePolygon(T2d2Hndl pg, T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->next();
+    _CAST_2POLY_G(pg)->deletePolygon(_CAST_2POLY(poly));
 }
 
-void *t2d2_polygonGetPrev(void *p)
+
+void t2d2_polygonGroupAllocateMCash(T2d2Hndl pg, int stride, int subMeshNumber)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->prev();
+     _CAST_2POLY_G(pg)->allocCash(stride, subMeshNumber);
 }
 
-void t2d2_polygonDelete(void *p)
+
+T2d2Hndl t2d2_polygonGroupMeshCash(T2d2Hndl pg)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    t2d2::Polygon::exclude(poly);
-    delete poly;
+     return _CAST_2POLY_G(pg)->mcash();
 }
 
-void *t2d2_polygonAddNew(void *p)
+
+//===============================================================
+
+T2d2Hndl t2d2_polygonGetFirst(T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    poly->insertNext(new t2d2::Polygon());
-    return poly->next();
+    return _CAST_2POLY(poly)->first();
 }
 
-void *t2d2_polygonGetContour(void *p)
+T2d2Hndl t2d2_polygonGetNext(T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->ptrContour();
+    return _CAST_2POLY(poly)->next();
 }
 
-int t2d2_polygonGetHolesCount(void *p)
+T2d2Hndl t2d2_polygonGetPrev(T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->holesCount();
+    return _CAST_2POLY(poly)->prev();
 }
 
-void *t2d2_polygonGetHole(void *p, int index)
+T2d2Hndl t2d2_polygonGetContour(T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->ptrHole (index);
+    return _CAST_2POLY(poly)->contour();
 }
 
-void *t2d2_polygonAddHole(void *p)
+unsigned int t2d2_polygonGetHolesCount(T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    return poly->ptrAddHole();
+    return _CAST_2POLY(poly)->holesCount();
 }
 
-void t2d2_polygonDeleteHole(void *p, int index)
+T2d2Hndl t2d2_polygonGetHole(T2d2Hndl poly, unsigned int index)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    poly->deleteHole(index);
+    return _CAST_2POLY(poly)->hole (index);
 }
 
-void t2d2_polygonUpdateBBox(void *p)
+T2d2Hndl t2d2_polygonAddHole(T2d2Hndl poly)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    poly->updateBBox();
+    return _CAST_2POLY(poly)->addHole();
 }
 
-void t2d2_polygonGetBBox(void *p, float *pXMin, float *pXMax, float *pYMin, float *pYMax)
+void t2d2_polygonDeleteHole(T2d2Hndl poly, unsigned int index)
 {
-    t2d2::Polygon *poly = static_cast<t2d2::Polygon *>(p);
-    const t2d2::BBox &b = poly->bbox();
-    *pXMax = b.xmax;
-    *pXMin = b.xmin;
-    *pYMin = b.ymin;
-    *pYMax = b.ymax;
+    _CAST_2POLY(poly)->deleteHole(index);
 }
 
-int t2d2_pointsGetCount(void *p)
+void t2d2_polygonUpdateBBox(T2d2Hndl poly)
 {
-    t2d2::Points &points = *static_cast<t2d2::Points *>(p);
-    return static_cast<int>(points.size());
+    _CAST_2POLY(poly)->updateBBox();
 }
 
-void t2d2_pointsResize(void *p, int size)
+void t2d2_polygonGetBBox(T2d2Hndl poly, float *out, int stride)
 {
-    t2d2::Points &points = *static_cast<t2d2::Points *>(p);
-    if (size < points.size()) {
-        t2d2::Polygon::cleanPoints(points, size, static_cast<int>(points.size())-size);
-    }
-    points.resize(size);
+    const t2d2::BBox &b = _CAST_2POLY(poly)->bbox();
+    out[0] = b.xmin;
+    out[1] = b.ymin;
+
+    out += stride;
+
+    out[0] = b.xmax;
+    out[1] = b.ymax;
 }
 
-void t2d2_pointsGetValueVector2(void *p, int startIndex, int count, float *out)
+float t2d2_polygonGetZValue(T2d2Hndl poly)
 {
-    t2d2::Points &points = *static_cast<t2d2::Points *>(p);
-    for(int i = 0; i < count; i++){
-        t2d2::Point *pnt = points[i + startIndex];
-        out[i*2 + 0] = pnt->x;
-        out[i*2 + 1] = pnt->y;
-    }
+    return _CAST_2POLY(poly)->zValue();
 }
 
-void t2d2_pointsSetValueVector2(void *p, int startIndex, float *in, int count)
+int t2d2_polygonGetSubMeshIndex(T2d2Hndl poly)
 {
-    t2d2::Points &points = *static_cast<t2d2::Points *>(p);
-
-    if ((startIndex + count) >= points.size())
-        points.resize(startIndex + count);
-    for(int i = 0; i < count; i++) {
-        t2d2::Point *pnt = points[i+startIndex];
-        if (pnt == nullptr) {
-            pnt = new t2d2::Point();
-            points[i+startIndex] = pnt;
-        }
-        pnt->x = in[i*2 + 0];
-        pnt->y = in[i*2 + 1];
-    }
+    return _CAST_2POLY(poly)->subMeshIndex();
 }
 
-void t2d2_pointsRemove(void *p, int startIndex, int count)
+void t2d2_polygonSetZValue(T2d2Hndl poly, float zval)
 {
-    t2d2::Points &points = *static_cast<t2d2::Points *>(p);
-    t2d2::Polygon::cleanPoints(points, startIndex, count);
-    points.erase(points.begin() + startIndex, points.begin() + startIndex + count);
+    _CAST_2POLY(poly)->setZValue(zval);
 }
 
-void t2d2_pointsAddValueVector2(void *p, float *in, int count)
+void t2d2_polygonSetSubMeshIndex(T2d2Hndl poly, int smi)
 {
-    t2d2::Points &points = *static_cast<t2d2::Points *>(p);
-    for(int i = 0; i < count; i++) {
-        t2d2::Point *pnt = new t2d2::Point();
-        pnt->x = in[i*2 + 0];
-        pnt->y = in[i*2 + 1];
-        points.push_back(pnt);
-    }
+    _CAST_2POLY(poly)->setSubMeshIndex(smi);
 }
+
+void t2d2_polygonGetFlags(T2d2Hndl poly, bool *flags)
+{
+    t2d2::Polygon *p = _CAST_2POLY(poly);
+    flags[0] = p->genMesh();
+    flags[1] = p->genCollider();
+    flags[2] = p->clippingSubj();
+    flags[3] = p->clippingClip();
+}
+
+void t2d2_polygonSetFlags(T2d2Hndl poly, bool *flags)
+{
+    t2d2::Polygon *p = _CAST_2POLY(poly);
+    p->setGenMesh       (flags[0]);
+    p->setGenCollider   (flags[1]);
+    p->setClippingSubj  (flags[2]);
+    p->setClippingClip  (flags[3]);
+}
+
+unsigned int t2d2_contourGetLength(T2d2Hndl cntr)
+{
+    return _CAST_2CONTOUR(cntr)->length();
+}
+
+unsigned int t2d2_contourGetValue(T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
+                                 float *out, unsigned int stride, bool fillByZValue)
+{
+    return _CAST_2CONTOUR(cntr)->getValue(startIndex, length, out, stride, fillByZValue);
+}
+
+unsigned int t2d2_contourSetValue(T2d2Hndl cntr, unsigned int startIndex, float *in,
+                                 unsigned int length, int stride)
+{
+    return _CAST_2CONTOUR(cntr)->setValue(startIndex, in, length, stride);
+}
+
+bool t2d2_contourRemove(T2d2Hndl cntr, int startIndex, int count)
+{
+    return _CAST_2CONTOUR(cntr)->remove(startIndex, count);
+}
+
+unsigned int t2d2_contourAddValue(T2d2Hndl cntr, float *in, unsigned int length, unsigned int stride)
+{
+    return _CAST_2CONTOUR(cntr)->addValue(in, length, stride);
+}
+
+unsigned int t2d2_mcashStride(T2d2Hndl mcash)
+{
+    return _CAST_2MCASH(mcash)->stride();
+}
+
+unsigned int t2d2_mcashVertexNumber(T2d2Hndl mcash)
+{
+    return _CAST_2MCASH(mcash)->vertexNumber();
+}
+
+unsigned int t2d2_mcashSubMeshNumber(T2d2Hndl mcash)
+{
+    return _CAST_2MCASH(mcash)->subMeshNumber();
+}
+
+unsigned int t2d2_mcashTriangleNumber(T2d2Hndl mcash, unsigned int smi)
+{
+    return _CAST_2MCASH(mcash)->triangleNumber(smi);
+}
+
+void t2d2_mcashGetVertices(T2d2Hndl mcash, float *out)
+{
+    _CAST_2MCASH(mcash)->cpyVertices(out);
+}
+
+void t2d2_mcashGetUv(T2d2Hndl mcash, float *out)
+{
+    _CAST_2MCASH(mcash)->cpyUv(out);
+}
+
+void t2d2_mcashGetIndices(T2d2Hndl mcash, unsigned int smi, int *out)
+{
+    _CAST_2MCASH(mcash)->cpyIndices(smi, out);
+}
+
+bool t2d2_utilContourContains(float *polyPoints, int length, int stride, float *point)
+{
+    return t2d2::pointInPolygon(polyPoints, length, stride, point);
+}
+
+bool t2d2_utilAlmostEquals(float a, float b, int maxUlps)
+{
+    return t2d2::almostEqual2sComplement(a, b, maxUlps);
+}
+
+bool t2d2_utilSegmentIntersect(float *a, float *b, float *c, float *d)
+{
+    return t2d2::intersects(a, b, c, d);
+}
+
+bool t2d2_utilPointToSegmentProjection(float *a, float *b, float *c, float *proj)
+{
+    return t2d2::pointToSegmentProjection (a, b, c, proj);
+}
+
+
+int t2d2_utilEdgeSelfIntersection(float *points, int length, int stride, int index)
+{
+    return t2d2::contourEdgeSelfIntersection(points, length, stride, index);
+}
+
+int t2d2_utilSegmentContourIntersection(float *segment, int strideS, float *contour, int length, int strideC)
+{
+    return t2d2::segmentContourIntersection(segment, strideS, contour, length, strideC);
+}
+
+int t2d2_utilFindNearestEdge(float *polyPoints, int length, int stride, float *point, float *out)
+{
+    return t2d2::findNearestEdgeToPoint(polyPoints, length, stride, point, out);
+}
+
+void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *outMax)
+{
+    t2d2::getBoundingBox(points, length, stride, outMin, outMax);
+}
+
+
+
+
 
