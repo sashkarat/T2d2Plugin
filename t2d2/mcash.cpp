@@ -129,6 +129,8 @@ void MCash::free()
 
 void MCash::allocAddContour(Contour *contour)
 {
+    if (!contour->isValid())
+        return;
     contour->setCashOffset(m_vertexNumber);
     m_vertexNumber += contour->length();
 }
@@ -139,6 +141,9 @@ void MCash::allocAddPolygon(Polygon *poly)
         return;
 
     if (poly->subMeshIndex() >= m_subMeshNumber)
+        return;
+
+    if (!poly->contour()->isValid())
         return;
 
     allocAddContour(poly->contour());
@@ -160,6 +165,9 @@ void MCash::allocSetVerticesData(Polygon *poly)
     if (poly->subMeshIndex() >= m_subMeshNumber)
         return;
 
+    if (!poly->contour()->isValid())
+        return;
+
     allocSetVerticesData (poly->contour());
 
     for(int i = 0; i < poly->holesCount(); i++)
@@ -168,6 +176,8 @@ void MCash::allocSetVerticesData(Polygon *poly)
 
 void MCash::allocSetVerticesData(Contour *contour)
 {
+    if (!contour->isValid())
+        return;
     for(unsigned int i = 0; i <contour->length(); i++) {
         t2d2::Point * p = contour->getPoint(i);
         p->m_index = contour->getCashOffset() + i;
@@ -200,9 +210,9 @@ void MCash::allocSetTrianglesData(Polygon *poly)
 
         int idx = (offset + i) * 3;
 
-        t2d2::Point *p0 = t->points[0];
+        t2d2::Point *p0 = t->points[2];
         t2d2::Point *p1 = t->points[1];
-        t2d2::Point *p2 = t->points[2];
+        t2d2::Point *p2 = t->points[0];
 
         trs.m_tri[idx + 0] = p0->m_index;
         trs.m_tri[idx + 1] = p1->m_index;

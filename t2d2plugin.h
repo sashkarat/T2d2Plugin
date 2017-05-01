@@ -25,6 +25,7 @@ extern "C" T2D2_EXPORT int t2d2_getAnswer();
 // common func
 
 extern "C" T2D2_EXPORT int  t2d2_version();
+extern "C" T2D2_EXPORT void t2d2_msgVersion();
 extern "C" T2D2_EXPORT void t2d2_setLogCallback(LogCallback lcb);
 extern "C" T2D2_EXPORT void t2d2_echoLog(const char *szStr);
 

@@ -16,6 +16,11 @@ int t2d2_version()
     return T2D2_VERSION;
 }
 
+void t2d2_msgVersion()
+{
+    t2d2::Log()<<"Version: "<<T2D2_VERSION<<" date: "<<__DATE__<<" time: "<<__TIME__;
+}
+
 void t2d2_setLogCallback(LogCallback lcb)
 {
     t2d2::Log::setCallback(lcb);
@@ -266,45 +271,45 @@ void t2d2_mcashGetIndices(T2d2Hndl mcash, unsigned int smi, int *out)
 
 bool t2d2_utilPointOnContour(float *polyPoints, int length, int stride, float *point)
 {
-    return t2d2::pointOnContour(polyPoints, length, stride, point);
+    return t2d2::util::pointOnContour(polyPoints, length, stride, point);
 }
 
 bool t2d2_utilContourContains(float *polyPoints, int length, int stride, float *point)
 {
-    return t2d2::contourContains(polyPoints, length, stride, point);
+    return t2d2::util::contourContains(polyPoints, length, stride, point);
 }
 
 bool t2d2_utilAlmostEquals(float a, float b, int maxUlps)
 {
-    return t2d2::almostEqual2sComplement(a, b, maxUlps);
+    return t2d2::util::almostEqual2sComplement(a, b, maxUlps);
 }
 
 bool t2d2_utilSegmentIntersect(float *a, float *b, float *c, float *d)
 {
-    return t2d2::intersects(a, b, c, d);
+    return t2d2::util::intersects(a, b, c, d);
 }
 
 bool t2d2_utilPointToSegmentProjection(float *a, float *b, float *c, float *proj)
 {
-    return t2d2::pointToSegmentProjection (a, b, c, proj);
+    return t2d2::util::pointToSegmentProjection (a, b, c, proj);
 }
 
 int t2d2_utilEdgeSelfIntersection(float *points, int length, int stride, int index)
 {
-    return t2d2::contourEdgeSelfIntersection(points, length, stride, index);
+    return t2d2::util::contourEdgeSelfIntersection(points, length, stride, index);
 }
 
 int t2d2_utilSegmentContourIntersection(float *segment, int strideS, float *contour, int length, int strideC)
 {
-    return t2d2::segmentContourIntersection(segment, strideS, contour, length, strideC);
+    return t2d2::util::segmentContourIntersection(segment, strideS, contour, length, strideC);
 }
 
 int t2d2_utilFindNearestEdge(float *polyPoints, int length, int stride, float *point, float *out)
 {
-    return t2d2::findNearestEdgeToPoint(polyPoints, length, stride, point, out);
+    return t2d2::util::findNearestEdgeToPoint(polyPoints, length, stride, point, out);
 }
 
 void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *outMax)
 {
-    t2d2::getBoundingBox(points, length, stride, outMin, outMax);
+    t2d2::util::getBoundingBox(points, length, stride, outMin, outMax);
 }

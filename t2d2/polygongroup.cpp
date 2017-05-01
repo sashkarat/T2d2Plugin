@@ -28,6 +28,15 @@ void PolygonGroup::deletePolygon(Polygon *p)
     delete p;
 }
 
+void PolygonGroup::validate()
+{
+    Polygon *poly = m_polygon;
+    while(poly != nullptr) {
+        poly->validate();
+        poly = poly->m_next;
+    }
+}
+
 void PolygonGroup::allocCash(int stride, int subMeshNum)
 {
     if (m_mCash == nullptr)

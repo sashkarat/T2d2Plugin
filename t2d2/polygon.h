@@ -72,6 +72,7 @@ public:
     unsigned int triNumber();
     Polygon::Triangle*  tri(int index);
 
+    void    validate();
     void    triangulate();
     void    deleteTriangles();
 
@@ -83,6 +84,7 @@ public:
 
 
     void updateBBox();
+
     BBox &bbox();
 
     bool genMesh()      {return m_genMesh;}
@@ -94,7 +96,6 @@ public:
     void setGenCollider     (bool s) {m_genCollider = s;}
     void setClippingSubj    (bool s) {m_clippingSubj = s;}
     void setClippingClip    (bool s) {m_clippingClip = s;}
-
 
     int cashTriOffset() const;
     void setCashTriOffset(int cashTriOffset);

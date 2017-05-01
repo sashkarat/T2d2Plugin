@@ -110,6 +110,13 @@ Polygon::Triangle *Polygon::tri(int index)
     return &m_triangles[index];
 }
 
+void Polygon::validate()
+{
+    m_contour->validate();
+    for(int i = 0; i < m_holes.size(); i++)
+        m_holes[i]->validate();
+}
+
 void Polygon::triangulate()
 {
     deleteTriangles();

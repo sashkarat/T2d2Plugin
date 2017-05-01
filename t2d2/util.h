@@ -1,26 +1,40 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "contour.h"
+
+
+
 namespace t2d2 {
 
-    bool almostEqual2sComplement(float a, float b, int maxUlps);
+    class Point;
+    class Contour;
 
-    bool intersects(float *a, float *b, float *c, float *d);
+    namespace util {
 
-    bool pointToSegmentProjection(float *a, float *b, float *c, float * res);
 
-    bool pointOnSegment(float *a, float *b, float *c);
+        bool almostEqual2sComplement(float a, float b, int maxUlps);
 
-    bool pointOnContour(float *poly, int length, int stride, float *point);
+        bool intersects(float *a, float *b, float *c, float *d);
 
-    bool contourContains(float *poly, int length, int stride, float *point);
+        bool pointToSegmentProjection(float *a, float *b, float *c, float * res);
 
-    int contourEdgeSelfIntersection(float *poly, int length, int stride, int index);
+        bool pointOnSegment(float *a, float *b, float *c);
 
-    int segmentContourIntersection(float *segment, int strideS, float *contour, int length, int strideC);
+        bool pointOnContour(float *poly, int length, int stride, float *point);
 
-    int findNearestEdgeToPoint(float *contour, int length, int stride, float *point, float *out);
+        bool contourContains(float *poly, int length, int stride, float *point);
 
-    void getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax);
+        int contourEdgeSelfIntersection(float *poly, int length, int stride, int index);
+
+        int segmentContourIntersection(float *segment, int strideS, float *contour, int length, int strideC);
+
+        int findNearestEdgeToPoint(float *contour, int length, int stride, float *point, float *out);
+
+        void getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax);
+
+        bool pointOnContour(Contour *contour, Point *p);
+    }
+
 }
 #endif // UTIL_H

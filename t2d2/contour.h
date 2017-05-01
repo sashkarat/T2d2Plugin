@@ -20,7 +20,7 @@ typedef std::vector<t2d2::ContourPtr>   ContourPtrVec;
 
 class Point: public p2t::Point {
 public:
-    Contour*     m_points;
+    Contour*    m_points;
     int         m_index;
     Point(Contour *points) : p2t::Point(), m_points(points), m_index(-1) {}
 };
@@ -36,7 +36,7 @@ protected:
     std::vector<p2t::Point*>    m_data;
     bool                        m_isContour;
     int                         m_cashOffset;
-
+    bool                        m_valid;
 public:
 
     Contour(Polygon *poly, bool isContour = false);
@@ -61,6 +61,9 @@ public:
     int getCashOffset() const;
     void setCashOffset(int cashOffset);
     Polygon *getPoly() const;
+
+    void validate();
+    bool isValid() const;
 };
 
 }

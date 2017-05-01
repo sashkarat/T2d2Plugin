@@ -19,10 +19,21 @@ Polygon *Contour::getPoly() const
     return m_poly;
 }
 
+void Contour::validate()
+{
+    //TODO: dig here
+}
+
+bool Contour::isValid() const
+{
+    return m_valid;
+}
+
 Contour::Contour(Polygon *poly, bool isContour) :
     m_poly(poly),
     m_isContour(isContour),
-    m_cashOffset(-1)
+    m_cashOffset(-1),
+    m_valid(true)
 {
 
 }

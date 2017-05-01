@@ -23,6 +23,8 @@ public :
     Polygon*    addPolygon();
     void        deletePolygon(Polygon *p);
 
+    void validate();
+
     void allocCash(int stride, int subMeshNum);
 
     MCash *mcash() const;

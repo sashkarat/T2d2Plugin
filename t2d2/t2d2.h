@@ -9,13 +9,4 @@
 #include "polygongroup.h"
 #include "mcash.h"
 
-//namespace  t2d2 {
-//class   Log;
-//class   Point;
-//class   BBox;
-//class   Points;
-//class   Polygon;
-//class   PolygonGroup;
-//}
-
 #endif // T2D2_H
