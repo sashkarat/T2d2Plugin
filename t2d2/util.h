@@ -11,7 +11,9 @@ namespace t2d2 {
 
     bool pointOnSegment(float *a, float *b, float *c);
 
-    bool pointInPolygon(float *poly, int length, int stride, float *point);
+    bool pointOnContour(float *poly, int length, int stride, float *point);
+
+    bool contourContains(float *poly, int length, int stride, float *point);
 
     int contourEdgeSelfIntersection(float *poly, int length, int stride, int index);
 

@@ -16,6 +16,9 @@ void Polygon::setCashTriOffset(int cashTriOffset)
 Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(nullptr)
 {
     m_bbox = new BBox();
+    m_triangles = nullptr;
+    m_triangleNum = 0;
+
     m_polyGroup = pg;
     m_contour = new Contour(this, true);
 
@@ -99,38 +102,52 @@ void Polygon::deleteHole(unsigned int index)
 
 unsigned int Polygon::triNumber()
 {
-    return static_cast<unsigned int>(m_triangles.size());
+    return m_triangleNum;
 }
 
-p2t::Triangle *Polygon::tri(int index)
+Polygon::Triangle *Polygon::tri(int index)
 {
-    return m_triangles[index];
+    return &m_triangles[index];
 }
 
 void Polygon::triangulate()
 {
     deleteTriangles();
 
-    p2t::CDT *p = new p2t::CDT(m_contour->m_data);
+    p2t::CDT *p2tCdt = new p2t::CDT(m_contour->m_data);
 
     for(int i = 0; i < m_holes.size(); i++)
-        p->AddHole(m_holes[i]->m_data);
+        p2tCdt->AddHole(m_holes[i]->m_data);
 
-    p->Triangulate();
+    p2tCdt->Triangulate();
 
-    m_triangles = p->GetTriangles();
+    std::vector<p2t::Triangle *> &tri = p2tCdt->GetTriangles();
 
-    delete p;
+    m_triangleNum = static_cast<unsigned int>(tri.size());
+
+    m_triangles = new Triangle[m_triangleNum];
+
+
+
+    Triangle *pt = m_triangles;
+
+    for(unsigned int i = 0; i < m_triangleNum; i++) {
+        p2t::Triangle *st = tri[i];
+        pt->points[0] = dynamic_cast<t2d2::Point*>(st->GetPoint(0));
+        pt->points[1] = dynamic_cast<t2d2::Point*>(st->GetPoint(1));
+        pt->points[2] = dynamic_cast<t2d2::Point*>(st->GetPoint(2));
+        pt++;
+    }
+
+    delete p2tCdt;
 }
 
 void Polygon::deleteTriangles()
 {
-    if (m_triangles.size() == 0)
-        return;
-
-    for(int i = 0; i < m_triangles.size(); i++)
-        delete m_triangles[i];
-    m_triangles.resize(0);
+    if (m_triangles)
+        delete []m_triangles;
+    m_triangles = nullptr;
+    m_triangleNum = 0;
 }
 
 void Polygon::updateBBox()

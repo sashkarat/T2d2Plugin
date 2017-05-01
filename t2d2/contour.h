@@ -49,8 +49,14 @@ public:
     bool            remove(unsigned int startIndex, unsigned int count);
 
     unsigned int    getValue(unsigned int startIndex, unsigned int length, float* out, unsigned int stride, bool fillByZValue);
+    unsigned int    getValue2d(unsigned int startIndex, unsigned int length, float* out);
+    unsigned int    getValue3d(unsigned int startIndex, unsigned int length, float* out);
     unsigned int    setValue(unsigned int startIndex, float *in, unsigned int length, int stride);
+    unsigned int    setValue2d(unsigned int startIndex, float *in, unsigned int length);
+    unsigned int    setValue3d(unsigned int startIndex, float *in, unsigned int length);
     unsigned int    addValue(float *in, unsigned int length, unsigned int stride);
+    unsigned int    addValue2d(float *in, unsigned int length);
+    unsigned int    addValue3d(float *in, unsigned int length);
 
     int getCashOffset() const;
     void setCashOffset(int cashOffset);

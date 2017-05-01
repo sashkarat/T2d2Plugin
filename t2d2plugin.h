@@ -73,12 +73,28 @@ extern "C" T2D2_EXPORT unsigned int  t2d2_contourGetValue   (T2d2Hndl cntr,
                                                              unsigned int startIndex, unsigned int length,
                                                              float* out, unsigned int stride, bool fillByZValue);
 
-extern "C" T2D2_EXPORT unsigned int  t2d2_contourSetValue   (T2d2Hndl cntr,
-                                                             unsigned int startIndex,
+extern "C" T2D2_EXPORT unsigned int t2d2_controurGetValue2d (T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
+                                                             float* out);
+
+extern "C" T2D2_EXPORT unsigned int t2d2_controurGetValue3d (T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
+                                                             float* out);
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourSetValue   (T2d2Hndl cntr, unsigned int startIndex,
                                                              float *in, unsigned int length, int stride);
 
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourSetValue2d (T2d2Hndl cntr, unsigned int startIndex,
+                                                             float *in, unsigned int length);
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourSetValue3d (T2d2Hndl cntr, unsigned int startIndex,
+                                                             float *in, unsigned int length);
+
 extern "C" T2D2_EXPORT bool          t2d2_contourRemove     (T2d2Hndl cntr, int startIndex, int count);
+
 extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue   (T2d2Hndl cntr, float *in, unsigned int length, unsigned int stride);
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue2d (T2d2Hndl cntr, float *in, unsigned int length);
+
+extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue3d (T2d2Hndl cntr, float *in, unsigned int length);
 
 
 // mesh cash func
@@ -97,7 +113,7 @@ extern "C" T2D2_EXPORT void         t2d2_mcashGetIndices        (T2d2Hndl mcash,
 extern "C" T2D2_EXPORT bool t2d2_utilAlmostEquals               (float a, float b, int maxUlps);
 extern "C" T2D2_EXPORT bool t2d2_utilSegmentIntersect           (float *a, float *b, float *c, float *d);
 extern "C" T2D2_EXPORT bool t2d2_utilPointToSegmentProjection   (float *a, float *b, float *c, float *proj);
-
+extern "C" T2D2_EXPORT bool t2d2_utilPointOnContour             (float *polyPoints, int length, int stride, float *point);
 extern "C" T2D2_EXPORT bool t2d2_utilContourContains            (float *polyPoints, int length, int stride, float *point);
 extern "C" T2D2_EXPORT int  t2d2_utilEdgeSelfIntersection       (float *points, int length, int stride, int index);
 extern "C" T2D2_EXPORT int  t2d2_utilSegmentContourIntersection (float *segment, int strideS, float *contour, int length, int strideC);

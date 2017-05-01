@@ -88,12 +88,47 @@ unsigned int Contour::getValue(unsigned int startIndex, unsigned int length, flo
         t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[i]);
         out[0] = p->x;
         out[1] = p->y;
-        if (fillByZValue) {
-            unsigned int st = stride;
-            while (st > 2)
-                out [st-- - 1] = m_poly->zValue();
+
+        if (fillByZValue && stride >= 3) {
+            out[2] = m_poly->zValue();
         }
+
         out += stride;
+        l++;
+    }
+    return l;
+}
+
+unsigned int Contour::getValue2d(unsigned int startIndex, unsigned int length, float *out)
+{
+    if ( startIndex >= m_data.size()) {
+        Log(ltWarning)<<__FUNCTION__<<"index out of range";
+        return 0;
+    }
+    unsigned int l = 0;
+    for(unsigned int i= startIndex; l < length && i < m_data.size(); i++) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[i]);
+        out[0] = p->x;
+        out[1] = p->y;
+        out += 2;
+        l++;
+    }
+    return l;
+}
+
+unsigned int Contour::getValue3d(unsigned int startIndex, unsigned int length, float *out)
+{
+    if ( startIndex >= m_data.size()) {
+        Log(ltWarning)<<__FUNCTION__<<"index out of range";
+        return 0;
+    }
+    unsigned int l = 0;
+    for(unsigned int i= startIndex; l < length && i < m_data.size(); i++) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[i]);
+        out[0] = p->x;
+        out[1] = p->y;
+        out[2] = m_poly->zValue();
+        out += 3;
         l++;
     }
     return l;
@@ -129,6 +164,16 @@ unsigned int Contour::setValue(unsigned int startIndex, float *in, unsigned int 
     return length;
 }
 
+unsigned int Contour::setValue2d(unsigned int startIndex, float *in, unsigned int length)
+{
+    return setValue(startIndex, in, length, 2);
+}
+
+unsigned int Contour::setValue3d(unsigned int startIndex, float *in, unsigned int length)
+{
+    return setValue(startIndex, in, length, 3);
+}
+
 unsigned int Contour::addValue(float *in, unsigned int length, unsigned int stride)
 {
     for(unsigned int i = 0; i < length; i++) {
@@ -141,5 +186,15 @@ unsigned int Contour::addValue(float *in, unsigned int length, unsigned int stri
             m_poly->bbox().update(p);
     }
     return length;
+}
+
+unsigned int Contour::addValue2d(float *in, unsigned int length)
+{
+    return addValue(in, length, 2);
+}
+
+unsigned int Contour::addValue3d(float *in, unsigned int length)
+{
+    return addValue(in, length, 3);
 }
 

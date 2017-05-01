@@ -174,16 +174,15 @@ void MCash::allocSetVerticesData(Contour *contour)
         int idx = p->m_index * m_stride;
         m_vertices[idx+0] = p->x;
         m_vertices[idx+1] = p->y;
+        if (m_stride >= 3)
+            m_vertices [idx + 2] = contour->getPoly()->zValue();
+
 
         idx = p->m_index * 2;
-
         //TODO: apply uv mapping
         m_uv[idx + 0] = 0;
         m_uv[idx + 1] = 1;
 
-        unsigned int st = m_stride;
-        while (st > 2)
-            m_vertices [idx + st-- - 1] = contour->getPoly()->zValue();
     }
 }
 
@@ -197,13 +196,13 @@ void MCash::allocSetTrianglesData(Polygon *poly)
         trs.m_tri = new int [trs.m_triNum * 3];
 
     for(unsigned int i = 0; i < poly->triNumber(); i++) {
-        p2t::Triangle *t = poly->tri(i);
+        Polygon::Triangle *t = poly->tri(i);
 
         int idx = (offset + i) * 3;
 
-        t2d2::Point *p0 = dynamic_cast<t2d2::Point*>(t->GetPoint(0));
-        t2d2::Point *p1 = dynamic_cast<t2d2::Point*>(t->GetPoint(1));
-        t2d2::Point *p2 = dynamic_cast<t2d2::Point*>(t->GetPoint(2));
+        t2d2::Point *p0 = t->points[0];
+        t2d2::Point *p1 = t->points[1];
+        t2d2::Point *p2 = t->points[2];
 
         trs.m_tri[idx + 0] = p0->m_index;
         trs.m_tri[idx + 1] = p1->m_index;

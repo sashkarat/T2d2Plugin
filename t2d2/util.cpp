@@ -19,6 +19,12 @@ extern float orient2d(float* pa, float* pb, float* pc);
 using namespace t2d2;
 
 
+int _index(int x, int l)
+{
+    return (l + (x % l)) % l;
+}
+
+
 bool t2d2::almostEqual2sComplement(float a, float b, int maxUlps)
 
 {
@@ -216,7 +222,6 @@ bool t2d2::pointToSegmentProjection(float *a, float *b, float *c, float *res)
     return projectPointOnLine(_P(a), _P(b), _P(c), _P(res));
 }
 
-
 bool t2d2::pointOnSegment(float *a, float *b, float *c)
 {
     _P _a(a);
@@ -240,13 +245,29 @@ bool t2d2::pointOnSegment(float *a, float *b, float *c)
     return false;
 }
 
-int _index(int x, int l)
+
+bool t2d2::pointOnContour(float *poly, int length, int stride, float *point)
 {
-    return (l + (x % l)) % l;
+    float *pC = point;
+    float pD[2];
+    pD[1] = pC[1];
+
+    for(int i = 0; i < length; i++)
+    {
+        int j = _index(i+1, length);
+
+        float *pA = poly + i * stride;
+        float *pB = poly + j * stride;
+
+        if (pointOnSegment(pA, pB, pC)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
-bool t2d2::pointInPolygon(float *poly, int length, int stride, float *point)
+bool t2d2::contourContains(float *poly, int length, int stride, float *point)
 {
     float *pC = point;
     float pD[2];
@@ -442,3 +463,5 @@ void t2d2::getBoundingBox(float *contour, int length, int stride, float *outMin,
     outMin[1] = ymin;
     outMax[1] = ymax;
 }
+
+

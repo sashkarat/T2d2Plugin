@@ -13,7 +13,7 @@ class Contour;
 class PolygonGroup;
 
 
-typedef std::vector<p2t::Triangle*>     TrianglePtrVec;
+typedef t2d2::Point*                    PointPtr;
 typedef t2d2::Contour*                  ContourPtr;
 typedef std::vector<t2d2::ContourPtr>   ContourPtrVec;
 
@@ -21,11 +21,18 @@ class Polygon
 {
     friend class PolygonGroup;
 
+public:
+    struct Triangle {
+        PointPtr points [3];
+    };
+
+protected:
     PolygonGroup*           m_polyGroup;
     BBox*                   m_bbox;
     Contour*                m_contour;
     ContourPtrVec           m_holes;
-    TrianglePtrVec          m_triangles;
+    Triangle*               m_triangles;
+    unsigned int            m_triangleNum;
 
     float                   m_zValue;
     unsigned int            m_subMeshIndex;
@@ -63,7 +70,7 @@ public:
     void    deleteHole(unsigned int index);
 
     unsigned int triNumber();
-    p2t::Triangle*  tri(int index);
+    Polygon::Triangle*  tri(int index);
 
     void    triangulate();
     void    deleteTriangles();

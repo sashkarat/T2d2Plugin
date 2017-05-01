@@ -184,10 +184,29 @@ unsigned int t2d2_contourGetValue(T2d2Hndl cntr, unsigned int startIndex, unsign
     return _CAST_2CONTOUR(cntr)->getValue(startIndex, length, out, stride, fillByZValue);
 }
 
-unsigned int t2d2_contourSetValue(T2d2Hndl cntr, unsigned int startIndex, float *in,
-                                 unsigned int length, int stride)
+unsigned int t2d2_controurGetValue2d(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
+{
+    return _CAST_2CONTOUR(cntr)->getValue2d(startIndex, length, out);
+}
+
+unsigned int t2d2_controurGetValue3d(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
+{
+    return _CAST_2CONTOUR(cntr)->getValue3d(startIndex, length, out);
+}
+
+unsigned int t2d2_contourSetValue(T2d2Hndl cntr, unsigned int startIndex, float *in, unsigned int length, int stride)
 {
     return _CAST_2CONTOUR(cntr)->setValue(startIndex, in, length, stride);
+}
+
+unsigned int t2d2_contourSetValue2d(T2d2Hndl cntr, unsigned int startIndex, float *in, unsigned int length)
+{
+    return _CAST_2CONTOUR(cntr)->setValue2d(startIndex, in, length);
+}
+
+unsigned int t2d2_contourSetValue3d(T2d2Hndl cntr, unsigned int startIndex, float *in, unsigned int length)
+{
+    return _CAST_2CONTOUR(cntr)->setValue3d(startIndex, in, length);
 }
 
 bool t2d2_contourRemove(T2d2Hndl cntr, int startIndex, int count)
@@ -198,6 +217,16 @@ bool t2d2_contourRemove(T2d2Hndl cntr, int startIndex, int count)
 unsigned int t2d2_contourAddValue(T2d2Hndl cntr, float *in, unsigned int length, unsigned int stride)
 {
     return _CAST_2CONTOUR(cntr)->addValue(in, length, stride);
+}
+
+unsigned int t2d2_contourAddValue2d(T2d2Hndl cntr, float *in, unsigned int length)
+{
+    return _CAST_2CONTOUR(cntr)->addValue2d(in, length);
+}
+
+unsigned int t2d2_contourAddValue3d(T2d2Hndl cntr, float *in, unsigned int length)
+{
+    return _CAST_2CONTOUR(cntr)->addValue3d(in, length);
 }
 
 unsigned int t2d2_mcashStride(T2d2Hndl mcash)
@@ -235,9 +264,14 @@ void t2d2_mcashGetIndices(T2d2Hndl mcash, unsigned int smi, int *out)
     _CAST_2MCASH(mcash)->cpyIndices(smi, out);
 }
 
+bool t2d2_utilPointOnContour(float *polyPoints, int length, int stride, float *point)
+{
+    return t2d2::pointOnContour(polyPoints, length, stride, point);
+}
+
 bool t2d2_utilContourContains(float *polyPoints, int length, int stride, float *point)
 {
-    return t2d2::pointInPolygon(polyPoints, length, stride, point);
+    return t2d2::contourContains(polyPoints, length, stride, point);
 }
 
 bool t2d2_utilAlmostEquals(float a, float b, int maxUlps)
@@ -254,7 +288,6 @@ bool t2d2_utilPointToSegmentProjection(float *a, float *b, float *c, float *proj
 {
     return t2d2::pointToSegmentProjection (a, b, c, proj);
 }
-
 
 int t2d2_utilEdgeSelfIntersection(float *points, int length, int stride, int index)
 {
@@ -275,10 +308,3 @@ void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *
 {
     t2d2::getBoundingBox(points, length, stride, outMin, outMax);
 }
-
-
-
-
-
-
-
