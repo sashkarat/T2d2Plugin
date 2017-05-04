@@ -131,6 +131,7 @@ void MCash::allocAddContour(Contour *contour)
 {
     if (!contour->isValid())
         return;
+
     contour->setCashOffset(m_vertexNumber);
     m_vertexNumber += contour->length();
 }
@@ -148,8 +149,9 @@ void MCash::allocAddPolygon(Polygon *poly)
 
     allocAddContour(poly->contour());
 
-    for(int i = 0; i < poly->holesCount(); i++)
+    for(int i = 0; i < poly->holesCount(); i++) {
         allocAddContour(poly->hole(i));
+    }
 
     poly->triangulate();
 
@@ -178,6 +180,7 @@ void MCash::allocSetVerticesData(Contour *contour)
 {
     if (!contour->isValid())
         return;
+
     for(unsigned int i = 0; i <contour->length(); i++) {
         t2d2::Point * p = contour->getPoint(i);
         p->m_index = contour->getCashOffset() + i;

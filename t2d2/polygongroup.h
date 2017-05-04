@@ -1,6 +1,8 @@
 #ifndef POLYGONGROUP_H
 #define POLYGONGROUP_H
 
+#include <fstream>
+
 #include "t2d2.h"
 
 namespace t2d2 {
@@ -30,6 +32,10 @@ public :
     MCash *mcash() const;
 
     void freeMCash();
+
+    static void             saveToFile(PolygonGroup *pg, std::ofstream &fs);
+
+    static PolygonGroup*    loadFromFile(std::ifstream &fs);
 
 protected:
     void deletePolygons();

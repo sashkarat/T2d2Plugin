@@ -2,6 +2,7 @@
 #define CONTOUR_H
 
 #include <vector>
+#include <fstream>
 
 #include "t2d2.h"
 #include "../poly2tri_f/poly2tri.h"
@@ -10,7 +11,7 @@
 
 namespace t2d2 {
 
-
+class BBox;
 class PolygonGroup;
 class Polygon;
 class Contour;
@@ -23,6 +24,7 @@ public:
     Contour*    m_points;
     int         m_index;
     Point(Contour *points) : p2t::Point(), m_points(points), m_index(-1) {}
+    Point(float x, float y, Contour *points) : p2t::Point(x, y), m_points(points), m_index(-1) {}
 };
 
 
@@ -33,10 +35,14 @@ class Contour
 protected:
 
     Polygon*                    m_poly;
+    BBox*                       m_bbox;
     std::vector<p2t::Point*>    m_data;
     bool                        m_isContour;
     int                         m_cashOffset;
     bool                        m_valid;
+
+    void    updateBBox();
+
 public:
 
     Contour(Polygon *poly, bool isContour = false);
@@ -64,6 +70,13 @@ public:
 
     void validate();
     bool isValid() const;
+
+    p2t::Point * operator[] (unsigned int index);
+    BBox *bbox() const;
+
+    static void saveToFile(Contour *c, std::ofstream &fs);
+
+    static void loadFromFile(Contour *c, std::ifstream &fs);
 };
 
 }

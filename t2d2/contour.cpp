@@ -21,12 +21,74 @@ Polygon *Contour::getPoly() const
 
 void Contour::validate()
 {
-    //TODO: dig here
+    if (m_isContour)
+        m_valid = !t2d2::util::hasContourEdgeSelfIntersection(this);
+     else
+        m_valid = t2d2::util::isHoleContourValid(this, m_poly->contour());
+//    if (m_isContour)
+//        Log()<<__FUNCTION__<<"contour validation res:"<<m_valid;
+//    else
+//        Log()<<__FUNCTION__<<"hole validation res:"<<m_valid;
 }
 
 bool Contour::isValid() const
 {
     return m_valid;
+}
+
+p2t::Point *Contour::operator[](unsigned int index)
+{
+    unsigned int l = static_cast<unsigned int>(m_data.size());
+    index = (l + (index % l)) % l;
+    return m_data[index];
+}
+
+BBox *Contour::bbox() const
+{
+    return m_bbox;
+}
+
+void Contour::saveToFile(Contour *c, std::ofstream &fs)
+{
+    int s = c->m_data.size();
+
+    fs.write((char *)&s, sizeof(int));
+
+    static float data[2];
+
+    for(int i =0; i < c->m_data.size(); i++) {
+        data[0] = c->m_data[i]->x;
+        data[1] = c->m_data[i]->y;
+
+        fs.write((char*)data, sizeof(float) * 2);
+
+    }
+}
+
+void Contour::loadFromFile(Contour *c, std::ifstream &fs)
+{
+    c->m_bbox->reset();
+    c->m_data.clear();
+    int s = 0;
+    fs.read((char*)&s, sizeof(int));
+
+    static float data[2];
+
+    for (int i = 0; i < s; i++) {
+
+        fs.read((char*)data, sizeof(float)*2);
+
+        t2d2::Point *p = new t2d2::Point(data[0], data[1], c);
+        c->m_data.push_back(p);
+        c->m_bbox->update(p);
+    }
+}
+
+void Contour::updateBBox()
+{
+    m_bbox->reset();
+    for(int i = 0; i < m_data.size(); i++)
+        m_bbox->update(dynamic_cast<t2d2::Point*>(m_data[i]));
 }
 
 Contour::Contour(Polygon *poly, bool isContour) :
@@ -35,21 +97,22 @@ Contour::Contour(Polygon *poly, bool isContour) :
     m_cashOffset(-1),
     m_valid(true)
 {
-
+    m_bbox = new BBox();
 }
 
 Contour::~Contour()
 {
     for(unsigned int j = 0; j< m_data.size(); j++)
         delete m_data[j];
+    delete m_bbox;
 }
 
 void Contour::clean()
 {
     for(unsigned int j = 0; j< m_data.size(); j++)
         delete m_data[j];
-    if (m_isContour)
-        m_poly->updateBBox();
+    m_data.resize(0);
+    m_bbox->reset();
 }
 
 unsigned int Contour::length()
@@ -83,8 +146,9 @@ bool Contour::remove (unsigned int startIndex, unsigned int count)
         delete p;
     }
     m_data.erase(is, ie);
-    if (m_isContour)
-        m_poly->updateBBox();
+
+    updateBBox();
+
     return true;
 }
 
@@ -170,8 +234,9 @@ unsigned int Contour::setValue(unsigned int startIndex, float *in, unsigned int 
         p->y = in[1];
         in += stride;
     }
-    if (m_isContour)
-        m_poly->updateBBox();
+
+    updateBBox();
+
     return length;
 }
 
@@ -193,8 +258,9 @@ unsigned int Contour::addValue(float *in, unsigned int length, unsigned int stri
         p->y = in[1];
         m_data.push_back(p);
         in += stride;
-        if (m_isContour)
-            m_poly->bbox().update(p);
+
+        m_bbox->update(p);
+
     }
     return length;
 }
@@ -208,4 +274,5 @@ unsigned int Contour::addValue3d(float *in, unsigned int length)
 {
     return addValue(in, length, 3);
 }
+
 

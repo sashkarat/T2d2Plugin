@@ -20,6 +20,9 @@ public:
     void reset();
 
     void update(const Point *p);
+
+    bool contains (t2d2::Point *p);
+    bool contains (t2d2::BBox *bb);
 };
 
 }

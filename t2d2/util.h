@@ -12,8 +12,18 @@ namespace t2d2 {
 
     namespace util {
 
-
         bool almostEqual2sComplement(float a, float b, int maxUlps);
+
+        inline bool lessOrEq(float a, float b)
+
+        {
+            return (t2d2::util::almostEqual2sComplement(a, b, 1) || a < b);
+        }
+
+        inline bool moreOrEq(float a, float b)
+        {
+            (t2d2::util::almostEqual2sComplement(a, b, 1) || a > b);
+        }
 
         bool intersects(float *a, float *b, float *c, float *d);
 
@@ -33,7 +43,12 @@ namespace t2d2 {
 
         void getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax);
 
-        bool pointOnContour(Contour *contour, Point *p);
+        bool hasContourEdgeSelfIntersection(Contour *contour);
+
+        bool contourContainsSegment(t2d2::Contour *contour, t2d2::Point *pointA, t2d2::Point *pointB, bool segmentIntersectionRule);
+
+        bool isHoleContourValid(t2d2::Contour *holeContour, t2d2::Contour *contour);
+
     }
 
 }

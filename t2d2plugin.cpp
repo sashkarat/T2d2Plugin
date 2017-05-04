@@ -1,3 +1,4 @@
+#include <fstream>
 #include "t2d2plugin.h"
 
 #include "t2d2/t2d2.h"
@@ -48,6 +49,36 @@ void t2d2_polygonGroupDelete(T2d2Hndl pg)
     delete _CAST_2POLY_G(pg);
 }
 
+T2d2Hndl t2d2_polygonGroupLoadFromFile(const char *szFileName)
+{
+    std::ifstream fs(szFileName, std::ifstream::binary);
+
+    if (!fs.is_open()) {
+       t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
+       return nullptr;
+    }
+
+    t2d2::PolygonGroup *pg = t2d2::PolygonGroup::loadFromFile(fs);
+
+    fs.close();
+
+    return pg;
+}
+
+void t2d2_polygonGroupSaveToFile(T2d2Hndl pg, const char *szFileName)
+{
+    std::ofstream fs(szFileName, std::ofstream::binary | std::ofstream::trunc);
+
+    if (!fs.is_open()) {
+        t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
+        return;
+    }
+
+    t2d2::PolygonGroup::saveToFile(_CAST_2POLY_G(pg), fs);
+
+    fs.close();
+}
+
 T2d2Hndl t2d2_polygonGroupGetPolygon(T2d2Hndl pg)
 {
     return _CAST_2POLY_G(pg)->polygon();
@@ -63,6 +94,10 @@ void t2d2_polygonGroupDeletePolygon(T2d2Hndl pg, T2d2Hndl poly)
     _CAST_2POLY_G(pg)->deletePolygon(_CAST_2POLY(poly));
 }
 
+void t2d2_polygonGroupValidate(T2d2Hndl pg)
+{
+    _CAST_2POLY_G(pg)->validate();
+}
 
 T2d2Hndl t2d2_polygonGroupAllocateMCash(T2d2Hndl pg, int stride, int subMeshNumber)
 {
@@ -130,14 +165,14 @@ void t2d2_polygonUpdateBBox(T2d2Hndl poly)
 
 void t2d2_polygonGetBBox(T2d2Hndl poly, float *out, int stride)
 {
-    const t2d2::BBox &b = _CAST_2POLY(poly)->bbox();
-    out[0] = b.xmin;
-    out[1] = b.ymin;
+    const t2d2::BBox *b = _CAST_2POLY(poly)->bbox();
+    out[0] = b->xmin;
+    out[1] = b->ymin;
 
     out += stride;
 
-    out[0] = b.xmax;
-    out[1] = b.ymax;
+    out[0] = b->xmax;
+    out[1] = b->ymax;
 }
 
 float t2d2_polygonGetZValue(T2d2Hndl poly)
@@ -313,3 +348,5 @@ void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *
 {
     t2d2::util::getBoundingBox(points, length, stride, outMin, outMax);
 }
+
+

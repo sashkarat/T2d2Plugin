@@ -28,7 +28,7 @@ Log::~Log()
         outss<<"t2d2 [ERROR]";
     }
 
-    outss<<" "<<m_ss.str()<<std::endl;
+    outss<<" "<<m_ss.str();
 
     if (ms_logCallback != nullptr) {
         ms_logCallback(outss.str().c_str());

@@ -13,9 +13,34 @@ void Polygon::setCashTriOffset(int cashTriOffset)
     m_cashTriOffset = cashTriOffset;
 }
 
+void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
+{
+    Contour::saveToFile(poly->m_contour, fs);
+
+    int s = poly->m_holes.size();
+
+    fs.write((char *)&s, sizeof(int));
+
+    for(int i = 0; i < poly->m_holes.size(); i++)
+        Contour::saveToFile(poly->m_holes[i], fs);
+}
+
+void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
+{
+    Contour::loadFromFile(poly->m_contour, fs);
+    int hc  = 0;
+
+    fs.read((char*)&hc, sizeof(int));
+
+    for(int i = 0; i < hc; i++) {
+        Contour *hole = new Contour(poly);
+        Contour::loadFromFile(hole, fs);
+        poly->m_holes.push_back(hole);
+    }
+}
+
 Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(nullptr)
 {
-    m_bbox = new BBox();
     m_triangles = nullptr;
     m_triangleNum = 0;
 
@@ -36,8 +61,8 @@ Polygon::~Polygon()
 {
     deleteTriangles();
 
-    delete m_bbox;
     delete m_contour;
+
     for(unsigned int i = 0; i < m_holes.size(); i++)
         delete m_holes[i];
 }
@@ -113,6 +138,7 @@ Polygon::Triangle *Polygon::tri(int index)
 void Polygon::validate()
 {
     m_contour->validate();
+
     for(int i = 0; i < m_holes.size(); i++)
         m_holes[i]->validate();
 }
@@ -123,8 +149,11 @@ void Polygon::triangulate()
 
     p2t::CDT *p2tCdt = new p2t::CDT(m_contour->m_data);
 
-    for(int i = 0; i < m_holes.size(); i++)
+    for(int i = 0; i < m_holes.size(); i++) {
+        if (!m_holes[i]->m_valid)
+            continue;
         p2tCdt->AddHole(m_holes[i]->m_data);
+    }
 
     p2tCdt->Triangulate();
 
@@ -159,14 +188,12 @@ void Polygon::deleteTriangles()
 
 void Polygon::updateBBox()
 {
-    m_bbox->reset();
-    for(unsigned int i = 0; i < m_contour->m_data.size(); i++)
-        m_bbox->update(dynamic_cast<t2d2::Point*>(m_contour->m_data[i]));
+    m_contour->updateBBox();
 }
 
-BBox &Polygon::bbox()
+BBox *Polygon::bbox()
 {
-    return *m_bbox;
+    return m_contour->m_bbox;
 }
 
 void Polygon::insertNext(Polygon *p)

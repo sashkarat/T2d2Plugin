@@ -2,6 +2,7 @@
 #define POLYGON_H
 
 #include <vector>
+#include <fstream>
 #include "t2d2.h"
 #include "../poly2tri_f/common/shapes.h"
 
@@ -28,7 +29,6 @@ public:
 
 protected:
     PolygonGroup*           m_polyGroup;
-    BBox*                   m_bbox;
     Contour*                m_contour;
     ContourPtrVec           m_holes;
     Triangle*               m_triangles;
@@ -85,7 +85,7 @@ public:
 
     void updateBBox();
 
-    BBox &bbox();
+    BBox *bbox();
 
     bool genMesh()      {return m_genMesh;}
     bool genCollider()  {return m_genCollider;}
@@ -99,6 +99,10 @@ public:
 
     int cashTriOffset() const;
     void setCashTriOffset(int cashTriOffset);
+
+
+    static void saveToFile(Polygon *poly, std::ofstream &fs);
+    static void loadFromFile(Polygon *poly, std::ifstream &fs);
 
 protected:
 

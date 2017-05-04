@@ -24,3 +24,21 @@ void BBox::update(const Point *p)
     if (p->y > ymax)
         ymax = p->y;
 }
+
+bool BBox::contains(Point *p)
+{
+    return
+            t2d2::util::lessOrEq(xmin, p->x) &&
+            t2d2::util::lessOrEq(p->x, xmax) &&
+            t2d2::util::lessOrEq(ymin, p->y) &&
+            t2d2::util::lessOrEq(p->y, ymax);
+}
+
+bool BBox::contains(BBox *bb)
+{
+    return
+            t2d2::util::lessOrEq(xmin, bb->xmin) &&
+            t2d2::util::lessOrEq(bb->xmax, xmax) &&
+            t2d2::util::lessOrEq(ymin, bb->ymin) &&
+            t2d2::util::lessOrEq(bb->ymax, ymax);
+}
