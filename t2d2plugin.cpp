@@ -175,6 +175,12 @@ void t2d2_polygonGetBBox(T2d2Hndl poly, float *out, int stride)
     out[1] = b->ymax;
 }
 
+void t2d2_polygonSetUvProjectionMatrix4x4(T2d2Hndl poly, float *data)
+{
+    _CAST_2POLY(poly)->getUvProjection()->setMatrix4x4(data);
+}
+
+
 float t2d2_polygonGetZValue(T2d2Hndl poly)
 {
     return _CAST_2POLY(poly)->zValue();
@@ -349,4 +355,7 @@ void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *
     t2d2::util::getBoundingBox(points, length, stride, outMin, outMax);
 }
 
-
+void t2d2_utilGeometricCenter(float *points, int length, int stride, float *outX, float *outY)
+{
+    t2d2::util::getGeometricCenter(points, length, stride, outX, outY);
+}

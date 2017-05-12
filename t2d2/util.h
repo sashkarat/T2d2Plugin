@@ -41,7 +41,6 @@ namespace t2d2 {
 
         int findNearestEdgeToPoint(float *contour, int length, int stride, float *point, float *out);
 
-        void getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax);
 
         bool hasContourEdgeSelfIntersection(Contour *contour);
 
@@ -49,6 +48,9 @@ namespace t2d2 {
 
         bool isHoleContourValid(t2d2::Contour *holeContour, t2d2::Contour *contour);
 
+        void getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax);
+
+        void getGeometricCenter(float *contour, int length, int stride, float *outX, float *outY);
     }
 
 }

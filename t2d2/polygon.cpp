@@ -17,11 +17,11 @@ void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
 {
     Contour::saveToFile(poly->m_contour, fs);
 
-    int s = poly->m_holes.size();
+    unsigned int s = static_cast<unsigned int>(poly->m_holes.size());
 
     fs.write((char *)&s, sizeof(int));
 
-    for(int i = 0; i < poly->m_holes.size(); i++)
+    for(unsigned int i = 0; i < s; i++)
         Contour::saveToFile(poly->m_holes[i], fs);
 }
 
@@ -41,11 +41,14 @@ void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
 
 Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(nullptr)
 {
+
     m_triangles = nullptr;
     m_triangleNum = 0;
 
     m_polyGroup = pg;
     m_contour = new Contour(this, true);
+
+    m_uvProjection = new UvProjection();
 
     m_zValue = 0.0f;
     m_subMeshIndex = 0;
@@ -59,6 +62,8 @@ Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(null
 
 Polygon::~Polygon()
 {
+    delete m_uvProjection;
+
     deleteTriangles();
 
     delete m_contour;

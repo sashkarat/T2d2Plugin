@@ -12,6 +12,7 @@ class Point;
 class BBox;
 class Contour;
 class PolygonGroup;
+class UvProjection;
 
 
 typedef t2d2::Point*                    PointPtr;
@@ -29,10 +30,17 @@ public:
 
 protected:
     PolygonGroup*           m_polyGroup;
+
     Contour*                m_contour;
     ContourPtrVec           m_holes;
+
+    UvProjection*           m_uvProjection;
+
     Triangle*               m_triangles;
     unsigned int            m_triangleNum;
+
+
+
 
     float                   m_zValue;
     unsigned int            m_subMeshIndex;
@@ -82,10 +90,11 @@ public:
     void    setZValue(float v)                  {m_zValue = v;}
     void    setSubMeshIndex(unsigned int smi)   {m_subMeshIndex = smi;}
 
-
     void updateBBox();
 
     BBox *bbox();
+
+    UvProjection*   getUvProjection() {return m_uvProjection;}
 
     bool genMesh()      {return m_genMesh;}
     bool genCollider()  {return m_genCollider;}

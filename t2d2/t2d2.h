@@ -8,5 +8,6 @@
 #include "polygon.h"
 #include "polygongroup.h"
 #include "mcash.h"
+#include "uvprojection.h"
 
 #endif // T2D2_H

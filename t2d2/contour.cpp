@@ -50,7 +50,7 @@ BBox *Contour::bbox() const
 
 void Contour::saveToFile(Contour *c, std::ofstream &fs)
 {
-    int s = c->m_data.size();
+    int s = static_cast<int>(c->m_data.size());
 
     fs.write((char *)&s, sizeof(int));
 

@@ -181,6 +181,8 @@ void MCash::allocSetVerticesData(Contour *contour)
     if (!contour->isValid())
         return;
 
+    UvProjection *uvProj = contour->getPoly()->getUvProjection();
+
     for(unsigned int i = 0; i <contour->length(); i++) {
         t2d2::Point * p = contour->getPoint(i);
         p->m_index = contour->getCashOffset() + i;
@@ -192,9 +194,13 @@ void MCash::allocSetVerticesData(Contour *contour)
 
 
         idx = p->m_index * 2;
-        //TODO: apply uv mapping
-        m_uv[idx + 0] = 0;
-        m_uv[idx + 1] = 1;
+
+        float u, v;
+
+        uvProj->computeUV(p, u, v);
+
+        m_uv[idx + 0] = u;
+        m_uv[idx + 1] = v;
 
     }
 }

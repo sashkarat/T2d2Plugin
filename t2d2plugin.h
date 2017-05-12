@@ -66,6 +66,8 @@ extern "C" T2D2_EXPORT void         t2d2_polygonDeleteHole          (T2d2Hndl po
 extern "C" T2D2_EXPORT void         t2d2_polygonUpdateBBox          (T2d2Hndl poly);
 extern "C" T2D2_EXPORT void         t2d2_polygonGetBBox             (T2d2Hndl poly, float *out, int stride);
 
+extern "C" T2D2_EXPORT void         t2d2_polygonSetUvProjectionMatrix4x4     (T2d2Hndl poly, float *data);
+
 extern "C" T2D2_EXPORT float        t2d2_polygonGetZValue           (T2d2Hndl poly);
 extern "C" T2D2_EXPORT int          t2d2_polygonGetSubMeshIndex     (T2d2Hndl poly);
 
@@ -129,7 +131,8 @@ extern "C" T2D2_EXPORT bool t2d2_utilContourContains            (float *polyPoin
 extern "C" T2D2_EXPORT int  t2d2_utilEdgeSelfIntersection       (float *points, int length, int stride, int index);
 extern "C" T2D2_EXPORT int  t2d2_utilSegmentContourIntersection (float *segment, int strideS, float *contour, int length, int strideC);
 extern "C" T2D2_EXPORT int  t2d2_utilFindNearestEdge            (float *polyPoints, int length, int stride, float *point, float *out);
-extern "C" T2D2_EXPORT void t2d2_utilBBox                       (float * points, int length, int stride, float *outMin, float *outMax);
+extern "C" T2D2_EXPORT void t2d2_utilBBox                       (float *points, int length, int stride, float *outMin, float *outMax);
+extern "C" T2D2_EXPORT void t2d2_utilGeometricCenter            (float *points, int length, int stride, float *outX, float *outY);
 
 
 #endif // T2DPLUGIN_H

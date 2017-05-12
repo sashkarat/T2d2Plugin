@@ -473,33 +473,6 @@ int t2d2::util::findNearestEdgeToPoint(float *contour, int length, int stride, f
     return index;
 }
 
-void t2d2::util::getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax)
-{
-    float xmin = 1e38f;
-    float xmax = -1e37f;
-    float ymin = 1e38f;
-    float ymax = -1e37f;
-
-    for(int i = 0; i < length; i++) {
-        _P p(contour);
-        if (p.x() < xmin)
-            xmin = p.x();
-        if (p.x() > xmax)
-            xmax = p.x();
-        if (p.y() < ymin)
-            ymin = p.y();
-        if (p.y() > ymax)
-            ymax = p.y();
-        contour += stride;
-    }
-
-    outMin[0] = xmin;
-    outMax[0] = xmax;
-    outMin[1] = ymin;
-    outMax[1] = ymax;
-}
-
-
 bool _pointOnSegment(_P &pA, _P &pB, _P &pC)
 {
     _BoundingBox bb(pA, pB);
@@ -659,3 +632,46 @@ bool util::isHoleContourValid(Contour *holeContour, Contour *contour)
     return true;
 }
 
+void t2d2::util::getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax)
+{
+    float xmin = 1e38f;
+    float xmax = -1e37f;
+    float ymin = 1e38f;
+    float ymax = -1e37f;
+
+    for(int i = 0; i < length; i++) {
+        _P p(contour);
+        if (p.x() < xmin)
+            xmin = p.x();
+        if (p.x() > xmax)
+            xmax = p.x();
+        if (p.y() < ymin)
+            ymin = p.y();
+        if (p.y() > ymax)
+            ymax = p.y();
+        contour += stride;
+    }
+
+    outMin[0] = xmin;
+    outMax[0] = xmax;
+    outMin[1] = ymin;
+    outMax[1] = ymax;
+}
+
+void util::getGeometricCenter(float *contour, int length, int stride, float *outX, float *outY)
+{
+    if (length == 0)
+        return;
+
+    float sx = 0;
+    float sy = 0;
+
+    for(int i = 0; i < length; i++) {
+        sx += contour[0];
+        sy += contour[1];
+        contour += stride;
+    }
+
+    *outX = sx / length;
+    *outY = sy / length;
+}
