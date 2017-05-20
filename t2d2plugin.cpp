@@ -94,26 +94,16 @@ void t2d2_polygonGroupDeletePolygon(T2d2Hndl pg, T2d2Hndl poly)
     _CAST_2POLY_G(pg)->deletePolygon(_CAST_2POLY(poly));
 }
 
-void t2d2_polygonGroupValidate(T2d2Hndl pg)
+T2d2Hndl t2d2_polygonGroupCreateMCash(T2d2Hndl pg, int contOpt, int stageOpt, int stride, int subMeshNumber)
 {
-    _CAST_2POLY_G(pg)->validate();
+   return _CAST_2POLY_G(pg)->createMCash(static_cast<t2d2::MCashContentOptions>(contOpt),
+                                         static_cast<t2d2::MCashStageOptions>(stageOpt),
+                                         stride, subMeshNumber);
 }
 
-T2d2Hndl t2d2_polygonGroupAllocateMCash(T2d2Hndl pg, int stride, int subMeshNumber)
+void t2d2_polygonGroupDeleteMCash(T2d2Hndl pg, T2d2Hndl mcash)
 {
-     _CAST_2POLY_G(pg)->allocCash(stride, subMeshNumber);
-     return _CAST_2POLY_G(pg)->mcash();
-}
-
-
-T2d2Hndl t2d2_polygonGroupMeshCash(T2d2Hndl pg)
-{
-     return _CAST_2POLY_G(pg)->mcash();
-}
-
-void t2d2_polygonGroupFreeMeshCash(T2d2Hndl pg)
-{
-    _CAST_2POLY_G(pg)->freeMCash();
+    _CAST_2POLY_G(pg)->deleteMCash (_CAST_2MCASH(mcash));
 }
 
 //===============================================================
@@ -201,6 +191,20 @@ void t2d2_polygonSetSubMeshIndex(T2d2Hndl poly, int smi)
     _CAST_2POLY(poly)->setSubMeshIndex(smi);
 }
 
+
+float t2d2_polygonGetArea(T2d2Hndl poly)
+{
+    return _CAST_2POLY(poly)->getArea();
+}
+
+void t2d2_polygonGetCOM(T2d2Hndl poly, float *out)
+{
+    t2d2::Polygon *p = _CAST_2POLY(poly);
+    *out = p->getComX();
+    *(out+1) = p->getComY();
+}
+
+
 void t2d2_polygonGetFlags(T2d2Hndl poly, bool *flags)
 {
     t2d2::Polygon *p = _CAST_2POLY(poly);
@@ -274,6 +278,14 @@ unsigned int t2d2_contourAddValue3d(T2d2Hndl cntr, float *in, unsigned int lengt
 {
     return _CAST_2CONTOUR(cntr)->addValue3d(in, length);
 }
+
+
+
+bool t2d2_mcashIsValid(T2d2Hndl mcash)
+{
+    return _CAST_2MCASH(mcash)->isValid();
+}
+
 
 unsigned int t2d2_mcashStride(T2d2Hndl mcash)
 {

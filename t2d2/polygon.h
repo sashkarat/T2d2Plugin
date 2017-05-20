@@ -43,6 +43,11 @@ protected:
 
 
     float                   m_zValue;
+
+    float                   m_area;
+    float                   m_comX;
+    float                   m_comY;
+
     unsigned int            m_subMeshIndex;
     int                     m_cashTriOffset;
 
@@ -80,8 +85,8 @@ public:
     unsigned int triNumber();
     Polygon::Triangle*  tri(int index);
 
-    void    validate();
-    void    triangulate();
+    bool validate(bool withHoles);
+    void    triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withHoles);
     void    deleteTriangles();
 
     float            zValue()                   {return m_zValue;}
@@ -96,10 +101,12 @@ public:
 
     UvProjection*   getUvProjection() {return m_uvProjection;}
 
-    bool genMesh()      {return m_genMesh;}
-    bool genCollider()  {return m_genCollider;}
-    bool clippingSubj() {return m_clippingSubj;}
-    bool clippingClip() {return m_clippingClip;}
+    inline bool isValid() const {return m_contour->isValid();}
+
+    inline bool genMesh()      const {return m_genMesh;}
+    inline bool genCollider()  const {return m_genCollider;}
+    inline bool clippingSubj() const {return m_clippingSubj;}
+    inline bool clippingClip() const {return m_clippingClip;}
 
     void setGenMesh         (bool s) {m_genMesh = s;}
     void setGenCollider     (bool s) {m_genCollider = s;}
@@ -109,9 +116,13 @@ public:
     int cashTriOffset() const;
     void setCashTriOffset(int cashTriOffset);
 
+    inline float getArea() const {return m_area;}
+    inline float getComX() const {return m_comX;}
+    inline float getComY() const {return m_comY;}
 
     static void saveToFile(Polygon *poly, std::ofstream &fs);
     static void loadFromFile(Polygon *poly, std::ifstream &fs);
+
 
 protected:
 

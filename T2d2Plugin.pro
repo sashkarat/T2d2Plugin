@@ -34,7 +34,6 @@ SOURCES += \
     t2d2/util.cpp \
     t2d2/bbox.cpp \
     t2d2/polygon.cpp \
-    predicates.cc \
     t2d2plugin.cpp \
     t2d2/mcash.cpp \
     t2d2/polygongroup.cpp \

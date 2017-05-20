@@ -51,6 +51,10 @@ namespace t2d2 {
         void getBoundingBox(float *contour, int length, int stride, float *outMin, float *outMax);
 
         void getGeometricCenter(float *contour, int length, int stride, float *outX, float *outY);
+
+        float triaArea(t2d2::Point *pA, t2d2::Point *pB, t2d2::Point * pC);
+
+        void triMidPoint(t2d2::Point *pA, t2d2::Point *pB, t2d2::Point * pC, float *outX, float *outY);
     }
 
 }

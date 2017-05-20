@@ -2,11 +2,6 @@
 
 using namespace t2d2;
 
-MCash *PolygonGroup::mcash() const
-{
-    return m_mCash;
-}
-
 Polygon *PolygonGroup::addPolygon()
 {
     if (m_polygon == nullptr) {
@@ -28,27 +23,19 @@ void PolygonGroup::deletePolygon(Polygon *p)
     delete p;
 }
 
-void PolygonGroup::validate()
+MCash *PolygonGroup::createMCash(t2d2::MCashContentOptions mcocOpt, t2d2::MCashStageOptions mcosOpt, int stride, int subMeshNum)
 {
-    Polygon *poly = m_polygon;
-    while(poly != nullptr) {
-        poly->validate();
-        poly = poly->m_next;
-    }
+    MCash *mcash = new MCash(this);
+
+    mcash->allocate(mcocOpt, mcosOpt, stride, subMeshNum);
+
+    return mcash;
 }
 
-void PolygonGroup::allocCash(int stride, int subMeshNum)
+void PolygonGroup::deleteMCash(MCash *mcash)
 {
-    if (m_mCash == nullptr)
-        m_mCash = new MCash();
-    m_mCash->allocate(stride, this, subMeshNum);
-}
-
-void PolygonGroup::freeMCash()
-{
-    if (m_mCash)
-        delete m_mCash;
-    m_mCash = nullptr;
+    if (mcash)
+        delete mcash;
 }
 
 void PolygonGroup::saveToFile(PolygonGroup *pg, std::ofstream &fs)
@@ -83,6 +70,7 @@ PolygonGroup *PolygonGroup::loadFromFile(std::ifstream &fs)
     }
     return pg;
 }
+
 
 void PolygonGroup::deletePolygons()
 {

@@ -140,24 +140,40 @@ Polygon::Triangle *Polygon::tri(int index)
     return &m_triangles[index];
 }
 
-void Polygon::validate()
+bool Polygon::validate(bool withHoles)
 {
+    bool res = false;
+
     m_contour->validate();
 
-    for(int i = 0; i < m_holes.size(); i++)
+    res = m_contour->isValid() || res;
+
+    if (!res)
+        return false;
+
+    if (!withHoles)
+        return res;
+
+    for(int i = 0; i < m_holes.size(); i++) {
         m_holes[i]->validate();
+        res = res || m_holes[i]->isValid();
+    }
+
+    return res;
 }
 
-void Polygon::triangulate()
+void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withHoles)
 {
     deleteTriangles();
 
     p2t::CDT *p2tCdt = new p2t::CDT(m_contour->m_data);
 
-    for(int i = 0; i < m_holes.size(); i++) {
-        if (!m_holes[i]->m_valid)
-            continue;
-        p2tCdt->AddHole(m_holes[i]->m_data);
+    if (withHoles) {
+        for(int i = 0; i < m_holes.size(); i++) {
+            if (!m_holes[i]->m_valid)
+                continue;
+            p2tCdt->AddHole(m_holes[i]->m_data);
+        }
     }
 
     p2tCdt->Triangulate();
@@ -166,18 +182,46 @@ void Polygon::triangulate()
 
     m_triangleNum = static_cast<unsigned int>(tri.size());
 
-    m_triangles = new Triangle[m_triangleNum];
 
-
+    if (allocTriangles)
+        m_triangles = new Triangle[m_triangleNum];
 
     Triangle *pt = m_triangles;
 
+    if (updateAreaAndCOM) {
+        m_area = 0;
+        m_comX = 0;
+        m_comY = 0;
+    }
+
     for(unsigned int i = 0; i < m_triangleNum; i++) {
         p2t::Triangle *st = tri[i];
-        pt->points[0] = dynamic_cast<t2d2::Point*>(st->GetPoint(0));
-        pt->points[1] = dynamic_cast<t2d2::Point*>(st->GetPoint(1));
-        pt->points[2] = dynamic_cast<t2d2::Point*>(st->GetPoint(2));
-        pt++;
+
+        PointPtr p0 = dynamic_cast<t2d2::Point*>(st->GetPoint(0));
+        PointPtr p1 = dynamic_cast<t2d2::Point*>(st->GetPoint(1));
+        PointPtr p2 = dynamic_cast<t2d2::Point*>(st->GetPoint(2));
+
+
+        if (updateAreaAndCOM) {
+            float a = t2d2::util::triaArea (p0, p1, p2);
+            float x, y;
+            t2d2::util::triMidPoint (p0, p1, p2, &x, &y);
+            m_comX += x * a;
+            m_comY += y * a;
+            m_area += a;
+        }
+
+        if (allocTriangles) {
+            pt->points[0] = p0;
+            pt->points[1] = p1;
+            pt->points[2] = p2;
+            pt++;
+        }
+    }
+
+    if (updateAreaAndCOM) {
+        m_comX /= m_area;
+        m_comY /= m_area;
     }
 
     delete p2tCdt;
@@ -186,7 +230,7 @@ void Polygon::triangulate()
 void Polygon::deleteTriangles()
 {
     if (m_triangles)
-        delete []m_triangles;
+        delete [] m_triangles;
     m_triangles = nullptr;
     m_triangleNum = 0;
 }

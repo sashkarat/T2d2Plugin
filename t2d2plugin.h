@@ -45,10 +45,8 @@ extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupAddPolygon     (T2d2Hndl pg);
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeletePolygon  (T2d2Hndl pg, T2d2Hndl poly);
 
 
-extern "C" T2D2_EXPORT void     t2d2_polygonGroupValidate       (T2d2Hndl pg);
-extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupAllocateMCash  (T2d2Hndl pg, int stride, int subMeshNumber);
-extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupMeshCash       (T2d2Hndl pg);
-extern "C" T2D2_EXPORT void     t2d2_polygonGroupFreeMeshCash   (T2d2Hndl pg);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateMCash    (T2d2Hndl pg, int contOpt, int stageOpt, int stride, int subMeshNumber);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeleteMCash   (T2d2Hndl pg, T2d2Hndl mcash);
 
 
 
@@ -73,6 +71,10 @@ extern "C" T2D2_EXPORT int          t2d2_polygonGetSubMeshIndex     (T2d2Hndl po
 
 extern "C" T2D2_EXPORT void         t2d2_polygonSetZValue           (T2d2Hndl poly, float zval);
 extern "C" T2D2_EXPORT void         t2d2_polygonSetSubMeshIndex     (T2d2Hndl poly, int smi);
+
+
+extern "C" T2D2_EXPORT float        t2d2_polygonGetArea             (T2d2Hndl poly);
+extern "C" T2D2_EXPORT void         t2d2_polygonGetCOM              (T2d2Hndl poly, float *out);
 
 extern "C" T2D2_EXPORT void         t2d2_polygonGetFlags            (T2d2Hndl poly, bool *flags);
 extern "C" T2D2_EXPORT void         t2d2_polygonSetFlags            (T2d2Hndl poly, bool *flags);
@@ -113,6 +115,7 @@ extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue3d (T2d2Hndl cntr, floa
 // mesh cash func
 
 
+extern "C" T2D2_EXPORT bool         t2d2_mcashIsValid           (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashStride            (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashVertexNumber      (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashSubMeshNumber     (T2d2Hndl mcash);

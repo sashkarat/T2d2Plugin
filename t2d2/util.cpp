@@ -6,8 +6,6 @@
 #include "log.h"
 
 
-extern float orient2d(float* pa, float* pb, float* pc);
-
 using namespace t2d2;
 
 inline int _index(int x, int l)
@@ -108,7 +106,6 @@ public:
                 t2d2::util::lessOrEq(p.x(), xmax) &&
                 t2d2::util::lessOrEq(ymin, p.y()) &&
                 t2d2::util::lessOrEq(p.y(), ymax);
-
     }
 };
 
@@ -120,8 +117,6 @@ inline float triOrient (_P &p0, _P &p1, _P &p2)
 
 inline int orientation(_P &p0, _P &p1, _P &p2)
 {
-//    float v = orient2d(p0.data, p1.data, p2.data);
-
     float v = triOrient (p0, p1, p2);
     return t2d2::util::almostEqual2sComplement(v, 0, 1) ? 0 : ((v > 0) ? 1 : 2);
 }
@@ -171,63 +166,6 @@ bool isIntersection(_P &pa, _P &pb, _P &pc, _P &pd)
 
     return false;
 }
-
-///*
-//segment a: a-b
-//segment c: c-d
-//ret codes:
-// 0 - no intersection
-// 1 - c lays on a-b
-// 2 - d lays on a-d
-// 3 - a lays on c-d
-// 4 - b lays on c-d
-// 5 - intersection
-
-//*/
-
-
-//int intersectionCode(_P &a, _P &b, _P &c, _P &d)
-//{
-//    bool nco = true;
-
-//    _BoundingBox bba(pa, pb);
-//    _BoundingBox bbc(pc, pd);
-
-//    int abc = orientation (pa, pb, pc);
-
-//    if (abc == 0 ) {
-//        if (bba.contains(pc))
-//            return 1;
-//        nco = false;
-//    }
-
-//    int abd = orientation(pa, pb, pd);
-
-//    if (abd == 0) {
-//        if (bba.contains(pd))
-//            return 2;
-//        nco = false;
-//    }
-
-//    int cda = orientation (pc, pd, pa);
-
-//    if (cda == 0 ) {
-//        if (bbc.contains(pa))
-//            return 3;
-//        nco = false;
-//    }
-
-//    if (cdb == 0 ) {
-//        if (bbc.contains(pb))
-//            return 4;
-//        co = false;
-//    }
-
-//    if (co && abc != abd && cda != cdb)
-//        return 5;
-
-//    return 0;
-//}
 
 bool projectPointOnLine(_P &a, _P &b, _P &c, _P &res)
 {
@@ -317,30 +255,20 @@ bool t2d2::util::contourContains(float *poly, int length, int stride, float *poi
         float *pA = poly + i * stride;
         float *pB = poly + j * stride;
 
-//        Log(ltDebug)<<"i"<<i<<"pA:"<<pA[0]<<pA[1]<<"  pB:"<<pB[0]<<pB[1];
-
-        if (pointOnSegment(pA, pB, pC)) {
-//            Log(ltDebug)<<"point on segment";
+        if (pointOnSegment(pA, pB, pC))
             return true;
-        }
 
         pD[0] = std::max(pA[0], pB[0]);
 
         if (pD[0] < pC[0]) {
-//            Log(ltDebug)<<"pD[0]"<<pD[0]<<" is less";
             continue;
         }
 
         pD[0] += 10;
 
-
-//        Log(ltDebug)<<"Ray:"<<pC[0]<<"-"<<pD[0]<<"   /"<<pD[1];
-
         if (intersects(pA, pB, pC, pD)) {
             c++;
-//            Log(ltDebug)<<"intersection. c:"<<c;
         } else {
-//            Log(ltDebug)<<"No intersection:"<<"pA["<<pA[0]<<pA[1]<<"]  pB[:]"<<pB[0]<<pB[1]<<"]";
             continue;
         }
 
@@ -378,8 +306,6 @@ bool t2d2::util::contourContains(float *poly, int length, int stride, float *poi
             } else {
                 c++;
             }
-//            Log(ltDebug)<<"pA on ray. oCAB:"<<oCAB<<"oCAPrA"<<oCAPrA<<"c:"<<c;
-
         }
     }
     return (c%2) == 1;
@@ -674,4 +600,22 @@ void util::getGeometricCenter(float *contour, int length, int stride, float *out
 
     *outX = sx / length;
     *outY = sy / length;
+}
+
+float util::triaArea(Point *pA, Point *pB, Point *pC)
+{
+    float a = sqrtf (pA->x * pA->y + pA->y * pA->y);
+    float b = sqrtf (pB->x * pB->y + pB->y * pB->y);
+    float c = sqrtf (pC->x * pC->y + pC->y * pC->y);
+
+    float p = (a+b+c)/2;
+    float da = p * (p - a) * (p -  b) * (p - c);
+
+    return sqrtf(da);
+}
+
+void util::triMidPoint(Point *pA, Point *pB, Point *pC, float *outX, float *outY)
+{
+    *outX = (pA->x + pB->x + pC->x) / 3;
+    *outY = (pA->y + pB->y + pC->y) / 3;
 }
