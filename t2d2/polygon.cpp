@@ -166,6 +166,9 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 {
     deleteTriangles();
 
+    if (!m_contour->isValid())
+        return;
+
     p2t::CDT *p2tCdt = new p2t::CDT(m_contour->m_data);
 
     if (withHoles) {
@@ -181,7 +184,6 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
     std::vector<p2t::Triangle *> &tri = p2tCdt->GetTriangles();
 
     m_triangleNum = static_cast<unsigned int>(tri.size());
-
 
     if (allocTriangles)
         m_triangles = new Triangle[m_triangleNum];
@@ -222,6 +224,7 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
     if (updateAreaAndCOM) {
         m_comX /= m_area;
         m_comY /= m_area;
+        Log()<<__FUNCTION__<<"area: "<<m_area<<"tri num:"<<m_triangleNum<<"withHoles:"<<withHoles;
     }
 
     delete p2tCdt;
@@ -243,6 +246,11 @@ void Polygon::updateBBox()
 BBox *Polygon::bbox()
 {
     return m_contour->m_bbox;
+}
+
+bool Polygon::isValid() const
+{
+    return m_contour->isValid();
 }
 
 void Polygon::insertNext(Polygon *p)

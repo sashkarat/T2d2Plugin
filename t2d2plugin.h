@@ -135,7 +135,7 @@ extern "C" T2D2_EXPORT int  t2d2_utilEdgeSelfIntersection       (float *points, 
 extern "C" T2D2_EXPORT int  t2d2_utilSegmentContourIntersection (float *segment, int strideS, float *contour, int length, int strideC);
 extern "C" T2D2_EXPORT int  t2d2_utilFindNearestEdge            (float *polyPoints, int length, int stride, float *point, float *out);
 extern "C" T2D2_EXPORT void t2d2_utilBBox                       (float *points, int length, int stride, float *outMin, float *outMax);
-extern "C" T2D2_EXPORT void t2d2_utilGeometricCenter            (float *points, int length, int stride, float *outX, float *outY);
+extern "C" T2D2_EXPORT void t2d2_utilAveragePoint               (float *points, int length, int stride, float *outX, float *outY);
 
 
 #endif // T2DPLUGIN_H

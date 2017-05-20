@@ -367,7 +367,7 @@ void t2d2_utilBBox(float *points, int length, int stride, float *outMin, float *
     t2d2::util::getBoundingBox(points, length, stride, outMin, outMax);
 }
 
-void t2d2_utilGeometricCenter(float *points, int length, int stride, float *outX, float *outY)
+void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, float *outY)
 {
-    t2d2::util::getGeometricCenter(points, length, stride, outX, outY);
+    t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }

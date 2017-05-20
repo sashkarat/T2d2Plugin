@@ -101,7 +101,7 @@ public:
 
     UvProjection*   getUvProjection() {return m_uvProjection;}
 
-    inline bool isValid() const {return m_contour->isValid();}
+    bool isValid() const;
 
     inline bool genMesh()      const {return m_genMesh;}
     inline bool genCollider()  const {return m_genCollider;}

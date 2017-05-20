@@ -11,9 +11,10 @@ enum MCashStageOptions {
     mcosValidate        = 0x01,
     mcosTraingulate     = 0x02,
     mcosUpdateArea      = 0x04,
-    mcosAllocVertices   = 0x80,
+    mcosAllocVertices   = 0x08,
     mcosProcessUV       = 0x10,
-    mcosAllocTriangles  = 0x20
+    mcosAllocTriangles  = 0x20,
+    mcosTriProcessing   = 0x28
 };
 
 enum MCashContentOptions {
@@ -89,12 +90,15 @@ protected:
 
     bool validate();
 
-    void allocVertexData(Polygon *poly);
-    void allocVertexData(Contour* contour);
+    void allocData();
+    void allocPolyVertexData(Polygon *poly);
+    void allocContourVertexData(Contour* contour);
+    void allocPolyTrianglesData(Polygon *poly);
 
-    void allocSetVerticesData(Polygon *poly);
-    void allocSetVerticesData(Contour * contour);
-    void allocSetTrianglesData(Polygon *poly);
+    void setData();
+    void setPolyVerticesData(Polygon *poly);
+    void setContourVerticesData(Contour * contour);
+    void setTrianglesData(Polygon *poly);
 
 
 

@@ -95,7 +95,7 @@ Contour::Contour(Polygon *poly, bool isContour) :
     m_poly(poly),
     m_isContour(isContour),
     m_cashOffset(-1),
-    m_valid(true)
+    m_valid(false)
 {
     m_bbox = new BBox();
 }

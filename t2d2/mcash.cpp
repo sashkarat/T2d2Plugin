@@ -76,56 +76,17 @@ void MCash::allocate(t2d2::MCashContentOptions mcocOpt, t2d2::MCashStageOptions 
     m_stride = stride;
     m_subMeshNumber = subMeshNum;
 
-    if (m_mcosOpt & t2d2::mcosValidate)
+    if (m_mcosOpt & mcosValidate) {
         if (!validate ())
             return;
-
-    m_valid = true;
-
-    bool allocTri = ;
-
-    if (((m_mcosOpt & mcosAllocTriangles) != 0) && ((m_mcosOpt & mcosTraingulate) != 0))
-        m_smTriangles = new SubMeshTriangles[m_subMeshNumber];
-
-    Polygon *poly = m_pg->polygon();
-    while (poly != nullptr) {
-        if (!contentCheck (poly))
-            continue;
-
-        if (m_mcosOpt & mcosAllocVertices)
-            allocVertexData (poly);
-
-        if (m_mcosOpt & mcosTraingulate) {
-            poly->triangulate ((m_mcosOpt & mcosUpdateArea) != 0,
-                               (m_mcosOpt & mcosAllocTriangles) != 0,
-                               (m_mcocOpt & mcocHoles) != 0);
-
-            if (m_mcosOpt & mcosAllocTriangles) {
-                poly->setCashTriOffset(m_smTriangles[poly->subMeshIndex()].m_triNum);
-                m_smTriangles[poly->subMeshIndex()].m_triNum += poly->triNumber();
-            }
-        }
-
-        poly = poly->next();
+        m_valid = true;
     }
 
-    if (m_mcosOpt & mcosAllocVertices) {
-        m_vertices = new float [m_vertexNumber * m_stride];
-        if (m_mcosOpt & mcosProcessUV)
-            m_uv = new float [m_vertexNumber * 2];
-    }
+    Log()<<__FUNCTION__<<"Validation res: "<<m_valid;
 
-    poly = m_pg->polygon();
+    allocData();
 
-    while (poly != nullptr) {
-        if (!contentCheck (poly))
-            continue;
-        if (m_mcosOpt & mcosAllocVertices)
-            allocSetVerticesData (poly);
-        if (allocTri)
-            allocSetTrianglesData(poly);
-        poly = poly->next();
-    }
+    setData();
 }
 
 void MCash::free()
@@ -165,23 +126,45 @@ bool MCash::validate()
     return res;
 }
 
-void MCash::allocVertexData(Polygon *poly)
+void MCash::allocData()
+{
+    if (((m_mcosOpt & mcosAllocTriangles) != 0) && ((m_mcosOpt & mcosTraingulate) != 0))
+        m_smTriangles = new SubMeshTriangles[m_subMeshNumber];
+
+    Polygon *poly = m_pg->polygon();
+    while (poly != nullptr) {
+        if (!contentCheck (poly))
+            continue;
+
+        if (m_mcosOpt & mcosAllocVertices)
+            allocPolyVertexData (poly);
+
+        allocPolyTrianglesData(poly);
+
+        poly = poly->next();
+    }
+
+    if (m_mcosOpt & mcosAllocVertices) {
+        m_vertices = new float [m_vertexNumber * m_stride];
+        if (m_mcosOpt & mcosProcessUV)
+            m_uv = new float [m_vertexNumber * 2];
+    }
+}
+
+void MCash::allocPolyVertexData(Polygon *poly)
 {
     if (!poly->isValid())
         return;
 
-    allocVertexData(poly->contour());
+    allocContourVertexData(poly->contour());
 
-
-    if ( (m_mcocOpt & mcocHoles) != 0) {
-        for(int i = 0; i < poly->holesCount(); i++) {
-            allocVertexData(poly->hole(i));
-        }
+    if (m_mcocOpt & mcocHoles) {
+        for(int i = 0; i < poly->holesCount(); i++)
+            allocContourVertexData(poly->hole(i));
     }
-
 }
 
-void MCash::allocVertexData(Contour *contour)
+void MCash::allocContourVertexData(Contour *contour)
 {
     if (!contour->isValid())
         return;
@@ -190,20 +173,49 @@ void MCash::allocVertexData(Contour *contour)
     m_vertexNumber += contour->length();
 }
 
-void MCash::allocSetVerticesData(Polygon *poly)
+void MCash::allocPolyTrianglesData(Polygon *poly)
 {
-    if (!poly->contour()->isValid())
-        return;
+    if (m_mcosOpt & mcosTraingulate) {
+        poly->triangulate ((m_mcosOpt & mcosUpdateArea) != 0,
+                           (m_mcosOpt & mcosAllocTriangles) != 0,
+                           (m_mcocOpt & mcocHoles) != 0);
 
-    allocSetVerticesData (poly->contour());
-
-    if (m_mcoc & mcocHoles) {
-        for(int i = 0; i < poly->holesCount(); i++)
-            allocSetVerticesData (poly->hole(i));
+        if (m_mcosOpt & mcosAllocTriangles) {
+            poly->setCashTriOffset(m_smTriangles[poly->subMeshIndex()].m_triNum);
+            m_smTriangles[poly->subMeshIndex()].m_triNum += poly->triNumber();
+        }
     }
 }
 
-void MCash::allocSetVerticesData(Contour *contour)
+void MCash::setData()
+{
+    Polygon *poly = m_pg->polygon();
+
+    while (poly != nullptr) {
+        if (!contentCheck (poly))
+            continue;
+        if (m_mcosOpt & mcosAllocVertices)
+            setPolyVerticesData (poly);
+        if (m_mcosOpt & mcosTriProcessing)
+            setTrianglesData(poly);
+        poly = poly->next();
+    }
+}
+
+void MCash::setPolyVerticesData(Polygon *poly)
+{
+    if (!poly->isValid())
+        return;
+
+    setContourVerticesData (poly->contour());
+
+    if (m_mcocOpt & mcocHoles) {
+        for(int i = 0; i < poly->holesCount(); i++)
+            setContourVerticesData (poly->hole(i));
+    }
+}
+
+void MCash::setContourVerticesData(Contour *contour)
 {
     if (!contour->isValid())
         return;
@@ -219,7 +231,7 @@ void MCash::allocSetVerticesData(Contour *contour)
         if (m_stride >= 3)
             m_vertices [idx + 2] = contour->getPoly()->zValue();
 
-        if (m_mcosOpt & mcosUVProjection) {
+        if (m_mcosOpt & mcosProcessUV) {
             idx = p->m_index * 2;
             float u, v;
             uvProj->computeUV(p, u, v);
@@ -229,9 +241,13 @@ void MCash::allocSetVerticesData(Contour *contour)
     }
 }
 
-void MCash::allocSetTrianglesData(Polygon *poly)
+void MCash::setTrianglesData(Polygon *poly)
 {
-    int smi = poly->subMeshIndex();
+    unsigned int smi = poly->subMeshIndex();
+
+    if (smi >= m_subMeshNumber)
+        return;
+
     int offset = poly->cashTriOffset();
 
     SubMeshTriangles &trs = m_smTriangles[smi];

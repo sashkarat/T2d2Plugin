@@ -584,7 +584,7 @@ void t2d2::util::getBoundingBox(float *contour, int length, int stride, float *o
     outMax[1] = ymax;
 }
 
-void util::getGeometricCenter(float *contour, int length, int stride, float *outX, float *outY)
+void util::getAveargePoint(float *contour, int length, int stride, float *outX, float *outY)
 {
     if (length == 0)
         return;
@@ -604,9 +604,19 @@ void util::getGeometricCenter(float *contour, int length, int stride, float *out
 
 float util::triaArea(Point *pA, Point *pB, Point *pC)
 {
-    float a = sqrtf (pA->x * pA->y + pA->y * pA->y);
-    float b = sqrtf (pB->x * pB->y + pB->y * pB->y);
-    float c = sqrtf (pC->x * pC->y + pC->y * pC->y);
+    float xa = pB->x - pA->x;
+    float ya = pB->y - pA->y;
+
+    float xb = pC->x - pB->x;
+    float yb = pC->y - pB->y;
+
+    float xc = pA->x - pC->x;
+    float yc = pA->y - pC->y;
+
+
+    float a = sqrtf (xa * xa + ya * ya);
+    float b = sqrtf (xb * xb + yb * yb);
+    float c = sqrtf (xc * xc + yc * yc);
 
     float p = (a+b+c)/2;
     float da = p * (p - a) * (p -  b) * (p - c);
