@@ -34,6 +34,8 @@
 #include "advancing_front.h"
 #include "../common/utils.h"
 
+#include <iostream>
+
 namespace p2t {
 
 // Triangulate simple polygon with holes

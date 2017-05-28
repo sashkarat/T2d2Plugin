@@ -82,11 +82,10 @@ void MCash::allocate(t2d2::MCashContentOptions mcocOpt, t2d2::MCashStageOptions 
         m_valid = true;
     }
 
-    Log()<<__FUNCTION__<<"Validation res: "<<m_valid;
-
     allocData();
 
     setData();
+
 }
 
 void MCash::free()
@@ -116,8 +115,10 @@ bool MCash::validate()
     Polygon *poly = m_pg->polygon();
 
     while(poly != nullptr) {
-        if (!contentCheck(poly))
+        if (!contentCheck(poly)) {
+            poly = poly->next();
             continue;
+        }
         poly->validate (withHoles);
         res = res || poly->isValid();
         poly = poly->next();
@@ -133,8 +134,10 @@ void MCash::allocData()
 
     Polygon *poly = m_pg->polygon();
     while (poly != nullptr) {
-        if (!contentCheck (poly))
+        if (!contentCheck (poly)) {
+            poly = poly->next();
             continue;
+        }
 
         if (m_mcosOpt & mcosAllocVertices)
             allocPolyVertexData (poly);
@@ -156,7 +159,7 @@ void MCash::allocPolyVertexData(Polygon *poly)
     if (!poly->isValid())
         return;
 
-    allocContourVertexData(poly->contour());
+    allocContourVertexData(poly->outline());
 
     if (m_mcocOpt & mcocHoles) {
         for(int i = 0; i < poly->holesCount(); i++)
@@ -176,6 +179,7 @@ void MCash::allocContourVertexData(Contour *contour)
 void MCash::allocPolyTrianglesData(Polygon *poly)
 {
     if (m_mcosOpt & mcosTraingulate) {
+
         poly->triangulate ((m_mcosOpt & mcosUpdateArea) != 0,
                            (m_mcosOpt & mcosAllocTriangles) != 0,
                            (m_mcocOpt & mcocHoles) != 0);
@@ -192,8 +196,10 @@ void MCash::setData()
     Polygon *poly = m_pg->polygon();
 
     while (poly != nullptr) {
-        if (!contentCheck (poly))
+        if (!contentCheck (poly)) {
+            poly = poly->next();
             continue;
+        }
         if (m_mcosOpt & mcosAllocVertices)
             setPolyVerticesData (poly);
         if (m_mcosOpt & mcosTriProcessing)
@@ -207,7 +213,7 @@ void MCash::setPolyVerticesData(Polygon *poly)
     if (!poly->isValid())
         return;
 
-    setContourVerticesData (poly->contour());
+    setContourVerticesData (poly->outline());
 
     if (m_mcocOpt & mcocHoles) {
         for(int i = 0; i < poly->holesCount(); i++)

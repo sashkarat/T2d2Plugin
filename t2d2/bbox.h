@@ -14,15 +14,23 @@ public:
     float ymin;
     float xmax;
     float ymax;
+    float xsumm;
+    float ysumm;
+    int   count;
+
 
     BBox();
 
+    bool isOk();
+
     void reset();
 
-    void update(const Point *p);
+    void addPoint(const Point *p);
 
     bool contains (t2d2::Point *p);
     bool contains (t2d2::BBox *bb);
+
+    void getAveragePoint(float *x, float *y);
 };
 
 }

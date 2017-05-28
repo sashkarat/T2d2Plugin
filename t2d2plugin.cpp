@@ -37,6 +37,13 @@ int t2d2_getAnswer()
     return 42;
 }
 
+
+void t2d2_setLogFile(const char *szLogFileName, bool trunc)
+{
+    t2d2::Log::setLogFile(szLogFileName, trunc);
+}
+
+
 //===============================================================
 
 T2d2Hndl t2d2_polygonGroupCreate()
@@ -54,8 +61,8 @@ T2d2Hndl t2d2_polygonGroupLoadFromFile(const char *szFileName)
     std::ifstream fs(szFileName, std::ifstream::binary);
 
     if (!fs.is_open()) {
-       t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
-       return nullptr;
+        t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
+        return nullptr;
     }
 
     t2d2::PolygonGroup *pg = t2d2::PolygonGroup::loadFromFile(fs);
@@ -96,9 +103,45 @@ void t2d2_polygonGroupDeletePolygon(T2d2Hndl pg, T2d2Hndl poly)
 
 T2d2Hndl t2d2_polygonGroupCreateMCash(T2d2Hndl pg, int contOpt, int stageOpt, int stride, int subMeshNumber)
 {
-   return _CAST_2POLY_G(pg)->createMCash(static_cast<t2d2::MCashContentOptions>(contOpt),
-                                         static_cast<t2d2::MCashStageOptions>(stageOpt),
-                                         stride, subMeshNumber);
+
+//    t2d2::Log()<<__FUNCTION__<<"stride"<<stride<<"smn"<<subMeshNumber<<"Stages: ";
+
+//    if (stageOpt & mcosValidate)
+//        t2d2::Log()<<"\tValidate";
+
+//    if (stageOpt & mcosTraingulate)
+//        t2d2::Log()<<"\tTriangulate";
+
+//    if (stageOpt & mcosAllocVertices)
+//        t2d2::Log()<<"\tAlloc Vert";
+
+//    if (stageOpt & mcosAllocTriangles)
+//        t2d2::Log()<<"\tAlloc Tri";
+
+//    if (stageOpt & mcosUpdateArea)
+//        t2d2::Log()<<"\tUpdate Area";
+
+//    if (stageOpt & mcosProcessUV)
+//        t2d2::Log()<<"\tprocess UV";
+
+//    t2d2::Log()<<__FUNCTION__<<"Content: ";
+
+//    if (contOpt & mcocAny)
+//        t2d2::Log()<<"\tAny";
+
+//    if (contOpt & mcocHoles)
+//        t2d2::Log()<<"\tHoles";
+
+//    if (contOpt & mcocMesh)
+//        t2d2::Log()<<"\tMesh";
+
+//    if (contOpt & mcocCollider)
+//        t2d2::Log()<<"\tCollider";
+
+
+    return _CAST_2POLY_G(pg)->createMCash(static_cast<t2d2::MCashContentOptions>(contOpt),
+                                          static_cast<t2d2::MCashStageOptions>(stageOpt),
+                                          stride, subMeshNumber);
 }
 
 void t2d2_polygonGroupDeleteMCash(T2d2Hndl pg, T2d2Hndl mcash)
@@ -125,7 +168,7 @@ T2d2Hndl t2d2_polygonGetPrev(T2d2Hndl poly)
 
 T2d2Hndl t2d2_polygonGetContour(T2d2Hndl poly)
 {
-    return _CAST_2POLY(poly)->contour();
+    return _CAST_2POLY(poly)->outline();
 }
 
 unsigned int t2d2_polygonGetHolesCount(T2d2Hndl poly)
@@ -165,6 +208,16 @@ void t2d2_polygonGetBBox(T2d2Hndl poly, float *out, int stride)
     out[1] = b->ymax;
 }
 
+void t2d2_polygonUpdateIndexator(T2d2Hndl poly, int gridSize)
+{
+    _CAST_2POLY(poly)->updateIndexator (gridSize);
+}
+
+void t2d2_polygonUpdateNormals(T2d2Hndl poly)
+{
+    _CAST_2POLY(poly)->updateNormals();
+}
+
 void t2d2_polygonSetUvProjectionMatrix4x4(T2d2Hndl poly, float *data)
 {
     _CAST_2POLY(poly)->getUvProjection()->setMatrix4x4(data);
@@ -200,10 +253,37 @@ float t2d2_polygonGetArea(T2d2Hndl poly)
 void t2d2_polygonGetCOM(T2d2Hndl poly, float *out)
 {
     t2d2::Polygon *p = _CAST_2POLY(poly);
-    *out = p->getComX();
-    *(out+1) = p->getComY();
+    out[0] = p->getComX();
+    out[1] = p->getComY();
 }
 
+void t2d2_polygonGetAveragePoint(T2d2Hndl poly, float *out)
+{
+    t2d2::BBox *bb = _CAST_2POLY(poly)->bbox();
+
+    bb->getAveragePoint (out, out+1);
+}
+
+
+void t2d2_polygonGetBBoxCenterPoint(T2d2Hndl poly, float *out)
+{
+    t2d2::BBox *bb = _CAST_2POLY(poly)->bbox();
+
+    out[0] = bb->xmin + (bb->xmax - bb->xmin) / 2.0f;
+    out[1] = bb->ymin + (bb->ymax - bb->ymin) / 2.0f;
+}
+
+void t2d2_polygonSetPivot(T2d2Hndl poly, float *in)
+{
+    _CAST_2POLY(poly)->setPivot(in[0], in[1]);
+}
+
+void t2d2_polygonGetPivot(T2d2Hndl poly, float *out)
+{
+    t2d2::Polygon *p = _CAST_2POLY(poly);
+    out[0] = p->getPivotX();
+    out[1] = p->getPivotY();
+}
 
 void t2d2_polygonGetFlags(T2d2Hndl poly, bool *flags)
 {
@@ -221,6 +301,9 @@ void t2d2_polygonSetFlags(T2d2Hndl poly, bool *flags)
     p->setGenCollider   (flags[1]);
     p->setClippingSubj  (flags[2]);
     p->setClippingClip  (flags[3]);
+
+//    t2d2::Log()<<__FUNCTION__<<"genM="<<p->genMesh()<<"genColl="<<p->genCollider()<<"clSbj="<<p->clippingSubj()<<"clClp="<<p->clippingClip();
+
 }
 
 unsigned int t2d2_contourGetLength(T2d2Hndl cntr)
@@ -229,7 +312,7 @@ unsigned int t2d2_contourGetLength(T2d2Hndl cntr)
 }
 
 unsigned int t2d2_contourGetValue(T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
-                                 float *out, unsigned int stride, bool fillByZValue)
+                                  float *out, unsigned int stride, bool fillByZValue)
 {
     return _CAST_2CONTOUR(cntr)->getValue(startIndex, length, out, stride, fillByZValue);
 }
@@ -279,13 +362,27 @@ unsigned int t2d2_contourAddValue3d(T2d2Hndl cntr, float *in, unsigned int lengt
     return _CAST_2CONTOUR(cntr)->addValue3d(in, length);
 }
 
+void t2d2_contourSetBorderFlags(T2d2Hndl cntr, int startIndex, int *flags, int length)
+{
+    _CAST_2CONTOUR(cntr)->setBorderFlags(startIndex, flags, length);
+}
+
+void t2d2_contourUpdateNormals(T2d2Hndl cntr)
+{
+    _CAST_2CONTOUR(cntr)->updateNormals();
+}
+
+void t2d2_contourGetNormals(T2d2Hndl cntr, int startIndex, int length, float *out)
+{
+    _CAST_2CONTOUR(cntr)->getNormals(startIndex, length, out);
+}
+
 
 
 bool t2d2_mcashIsValid(T2d2Hndl mcash)
 {
     return _CAST_2MCASH(mcash)->isValid();
 }
-
 
 unsigned int t2d2_mcashStride(T2d2Hndl mcash)
 {
@@ -371,3 +468,10 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
+
+
+
+
+
+

@@ -2,6 +2,7 @@
 #define T2D2LOG_H
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 namespace t2d2 {
 
@@ -18,6 +19,8 @@ class Log
 {
     LogType m_logType;
 
+    static std::ofstream m_logFs;
+
 public:
 
     Log ();
@@ -31,6 +34,8 @@ public:
     }
 
     static void setCallback(LogCallback lcb);
+
+    static void setLogFile(const char *logFileName, bool trunc);
 
 private:
     static LogCallback ms_logCallback;

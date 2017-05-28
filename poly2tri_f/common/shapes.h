@@ -49,8 +49,8 @@ struct Point {
   /// Default constructor does nothing (for performance).
   Point()
   {
-    x = 0.0;
-    y = 0.0;
+    x = 0.0f;
+    y = 0.0f;
   }
 
   /// The edges this point constitutes an upper ending point
@@ -66,8 +66,8 @@ struct Point {
   /// Set this point to all zeros.
   void set_zero()
   {
-    x = 0.0;
-    y = 0.0;
+    x = 0.0f;
+    y = 0.0f;
   }
 
   /// Set this point to some specified coordinates.

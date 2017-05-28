@@ -27,8 +27,6 @@ MCash *PolygonGroup::createMCash(t2d2::MCashContentOptions mcocOpt, t2d2::MCashS
 {
     MCash *mcash = new MCash(this);
 
-    Log()<<__FUNCTION__<<mcocOpt<<mcosOpt<<stride<<subMeshNum;
-
     mcash->allocate(mcocOpt, mcosOpt, stride, subMeshNum);
 
     return mcash;

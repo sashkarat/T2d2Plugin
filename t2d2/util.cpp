@@ -8,12 +8,6 @@
 
 using namespace t2d2;
 
-inline int _index(int x, int l)
-{
-    return (l + (x % l)) % l;
-}
-
-
 bool t2d2::util::almostEqual2sComplement(float a, float b, int maxUlps)
 
 {

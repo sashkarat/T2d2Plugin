@@ -10,6 +10,7 @@ namespace t2d2 {
 
 class Point;
 class BBox;
+class GridIndexator;
 class Contour;
 class PolygonGroup;
 class UvProjection;
@@ -31,7 +32,7 @@ public:
 protected:
     PolygonGroup*           m_polyGroup;
 
-    Contour*                m_contour;
+    Contour*                m_outline;
     ContourPtrVec           m_holes;
 
     UvProjection*           m_uvProjection;
@@ -40,13 +41,14 @@ protected:
     unsigned int            m_triangleNum;
 
 
-
-
     float                   m_zValue;
 
     float                   m_area;
     float                   m_comX;
     float                   m_comY;
+
+    float                   m_pivotX;
+    float                   m_pivotY;
 
     unsigned int            m_subMeshIndex;
     int                     m_cashTriOffset;
@@ -56,16 +58,11 @@ protected:
     bool                m_clippingSubj;
     bool                m_clippingClip;
 
-    //TODO: uv projection system
-
     Polygon *m_first;
     Polygon *m_prev;
     Polygon *m_next;
 
 public:
-
-
-
 
     Polygon(PolygonGroup *pg);
     ~Polygon();
@@ -75,7 +72,7 @@ public:
     Polygon *first();
     Polygon *findLast();
 
-    Contour *contour();
+    Contour *outline();
 
     int     holesCount();
     Contour* hole(unsigned int index);
@@ -85,9 +82,9 @@ public:
     unsigned int triNumber();
     Polygon::Triangle*  tri(int index);
 
-    bool validate(bool withHoles);
-    void    triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withHoles);
-    void    deleteTriangles();
+    bool validate       (bool withHoles);
+    void triangulate    (bool updateAreaAndCOM, bool allocTriangles, bool withHoles);
+    void deleteTriangles();
 
     float            zValue()                   {return m_zValue;}
     unsigned int     subMeshIndex()             {return m_subMeshIndex;}
@@ -96,8 +93,12 @@ public:
     void    setSubMeshIndex(unsigned int smi)   {m_subMeshIndex = smi;}
 
     void updateBBox();
+    void updateIndexator(int gridSize);
+    void updateNormals();
 
     BBox *bbox();
+
+    t2d2::Point* findPoint(float x, float y);
 
     UvProjection*   getUvProjection() {return m_uvProjection;}
 
@@ -119,6 +120,11 @@ public:
     inline float getArea() const {return m_area;}
     inline float getComX() const {return m_comX;}
     inline float getComY() const {return m_comY;}
+
+    inline float getPivotX() const {return m_pivotX;}
+    inline float getPivotY() const {return m_pivotY;}
+
+    void setPivot(float x, float y) {m_pivotX = x; m_pivotY = y;}
 
     static void saveToFile(Polygon *poly, std::ofstream &fs);
     static void loadFromFile(Polygon *poly, std::ifstream &fs);

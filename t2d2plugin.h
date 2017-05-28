@@ -15,6 +15,27 @@
     #define T2D2_EXPORT
 #endif
 
+
+enum MCStageOptions {
+    mcosValidate        = 0x01,
+    mcosTraingulate     = 0x02,
+    mcosUpdateArea      = 0x04,
+    mcosAllocVertices   = 0x08,
+    mcosProcessUV       = 0x10,
+    mcosAllocTriangles  = 0x20,
+    mcosTriProcessing   = 0x28
+};
+
+enum MCContentOptions {
+    mcocHoles       = 0x01,
+    mcocAny         = 0x02,
+    mcocMesh        = 0x04,
+    mcocCollider    = 0x08
+};
+
+
+
+
 typedef void (*LogCallback)(const char *);
 typedef void* T2d2Hndl;
 
@@ -28,6 +49,7 @@ extern "C" T2D2_EXPORT int  t2d2_version();
 extern "C" T2D2_EXPORT void t2d2_msgVersion();
 extern "C" T2D2_EXPORT void t2d2_setLogCallback(LogCallback lcb);
 extern "C" T2D2_EXPORT void t2d2_echoLog(const char *szStr);
+extern "C" T2D2_EXPORT void t2d2_setLogFile(const char *szLogFileName, bool trunc);
 
 
 // polygon group func
@@ -63,6 +85,8 @@ extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonAddHole             (T2d2Hndl po
 extern "C" T2D2_EXPORT void         t2d2_polygonDeleteHole          (T2d2Hndl poly, unsigned int index);
 extern "C" T2D2_EXPORT void         t2d2_polygonUpdateBBox          (T2d2Hndl poly);
 extern "C" T2D2_EXPORT void         t2d2_polygonGetBBox             (T2d2Hndl poly, float *out, int stride);
+extern "C" T2D2_EXPORT void         t2d2_polygonUpdateIndexator     (T2d2Hndl poly, int gridSize);
+extern "C" T2D2_EXPORT void         t2d2_polygonUpdateNormals       (T2d2Hndl poly);
 
 extern "C" T2D2_EXPORT void         t2d2_polygonSetUvProjectionMatrix4x4     (T2d2Hndl poly, float *data);
 
@@ -75,6 +99,11 @@ extern "C" T2D2_EXPORT void         t2d2_polygonSetSubMeshIndex     (T2d2Hndl po
 
 extern "C" T2D2_EXPORT float        t2d2_polygonGetArea             (T2d2Hndl poly);
 extern "C" T2D2_EXPORT void         t2d2_polygonGetCOM              (T2d2Hndl poly, float *out);
+extern "C" T2D2_EXPORT void         t2d2_polygonGetAveragePoint     (T2d2Hndl poly, float *out);
+extern "C" T2D2_EXPORT void         t2d2_polygonGetBBoxCenterPoint  (T2d2Hndl poly, float *out);
+
+extern "C" T2D2_EXPORT void         t2d2_polygonSetPivot            (T2d2Hndl poly, float *in);
+extern "C" T2D2_EXPORT void         t2d2_polygonGetPivot            (T2d2Hndl poly, float *out);
 
 extern "C" T2D2_EXPORT void         t2d2_polygonGetFlags            (T2d2Hndl poly, bool *flags);
 extern "C" T2D2_EXPORT void         t2d2_polygonSetFlags            (T2d2Hndl poly, bool *flags);
@@ -110,6 +139,13 @@ extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue   (T2d2Hndl cntr, floa
 extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue2d (T2d2Hndl cntr, float *in, unsigned int length);
 
 extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue3d (T2d2Hndl cntr, float *in, unsigned int length);
+
+extern "C" T2D2_EXPORT void          t2d2_contourSetBorderFlags (T2d2Hndl cntr, int startIndex, int *flags, int length);
+
+extern "C" T2D2_EXPORT void          t2d2_contourUpdateNormals  (T2d2Hndl cntr);
+
+extern "C" T2D2_EXPORT void          t2d2_contourGetNormals     (T2d2Hndl cntr, int startIndex, int length, float *out);
+
 
 
 // mesh cash func

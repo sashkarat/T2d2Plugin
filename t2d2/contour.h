@@ -15,16 +15,26 @@ class BBox;
 class PolygonGroup;
 class Polygon;
 class Contour;
+class GridIndexator;
 
 typedef t2d2::Contour*                  ContourPtr;
 typedef std::vector<t2d2::ContourPtr>   ContourPtrVec;
 
 class Point: public p2t::Point {
 public:
-    Contour*    m_points;
+    Contour*    m_contour;
     int         m_index;
-    Point(Contour *points) : p2t::Point(), m_points(points), m_index(-1) {}
-    Point(float x, float y, Contour *points) : p2t::Point(x, y), m_points(points), m_index(-1) {}
+    int         m_borderFlags;
+    float       m_nx;
+    float       m_ny;
+
+    Point(Contour *contour) :
+        p2t::Point(),
+        m_contour(contour), m_index(-1), m_borderFlags(0), m_nx(0), m_ny(0) {}
+
+    Point(float x, float y, Contour *contour) :
+        p2t::Point(x, y), m_contour(contour),
+        m_index(-1), m_borderFlags(0), m_nx(0), m_ny(0) {}
 };
 
 
@@ -32,10 +42,12 @@ class Contour
 {
     friend class Polygon;
     friend class PolygonGroup;
+    friend class GridIndexator;
 protected:
 
     Polygon*                    m_poly;
     BBox*                       m_bbox;
+    GridIndexator*              m_indexator;
     std::vector<p2t::Point*>    m_data;
     bool                        m_isContour;
     int                         m_cashOffset;
@@ -43,12 +55,14 @@ protected:
 
     void    updateBBox();
 
+
 public:
 
     Contour(Polygon *poly, bool isContour = false);
     ~Contour();
 
-    void clean();
+    void clear();
+    void clearTriDataRef();
 
     unsigned int    length();
     t2d2::Point*    getPoint(unsigned int index);
@@ -64,6 +78,14 @@ public:
     unsigned int    addValue2d(float *in, unsigned int length);
     unsigned int    addValue3d(float *in, unsigned int length);
 
+    void updateIndexator(int gridSize = 10);
+    GridIndexator *indexator();
+
+    void setBorderFlags(int startIndex, int *flags, int length);
+    void updateNormal(int index);
+    void updateNormals();
+    void getNormals(unsigned int startIndex, int length, float *out);
+
     int getCashOffset() const;
     void setCashOffset(int cashOffset);
     Polygon *getPoly() const;
@@ -71,8 +93,9 @@ public:
     void validate();
     bool isValid() const;
 
-    p2t::Point * operator[] (unsigned int index);
+    p2t::Point * operator[] (int index);
     BBox *bbox() const;
+
 
     static void saveToFile(Contour *c, std::ofstream &fs);
 

@@ -15,7 +15,7 @@ void Polygon::setCashTriOffset(int cashTriOffset)
 
 void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
 {
-    Contour::saveToFile(poly->m_contour, fs);
+    Contour::saveToFile(poly->m_outline, fs);
 
     unsigned int s = static_cast<unsigned int>(poly->m_holes.size());
 
@@ -27,8 +27,11 @@ void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
 
 void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
 {
-    Contour::loadFromFile(poly->m_contour, fs);
+    Contour::loadFromFile(poly->m_outline, fs);
+    poly->updateIndexator(10);
+
     int hc  = 0;
+
 
     fs.read((char*)&hc, sizeof(int));
 
@@ -46,7 +49,7 @@ Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(null
     m_triangleNum = 0;
 
     m_polyGroup = pg;
-    m_contour = new Contour(this, true);
+    m_outline = new Contour(this, true);
 
     m_uvProjection = new UvProjection();
 
@@ -58,6 +61,12 @@ Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(null
     m_genCollider = false;
     m_clippingSubj = true;
     m_clippingClip = false;
+
+    m_comX = 0;
+    m_comY = 0;
+    m_area = 0;
+    m_pivotX = 0;
+    m_pivotY = 0;
 }
 
 Polygon::~Polygon()
@@ -66,7 +75,7 @@ Polygon::~Polygon()
 
     deleteTriangles();
 
-    delete m_contour;
+    delete m_outline;
 
     for(unsigned int i = 0; i < m_holes.size(); i++)
         delete m_holes[i];
@@ -95,9 +104,9 @@ Polygon *Polygon::findLast()
     return  p;
 }
 
-Contour *Polygon::contour()
+Contour *Polygon::outline()
 {
-    return m_contour;
+    return m_outline;
 }
 
 int Polygon::holesCount()
@@ -144,9 +153,9 @@ bool Polygon::validate(bool withHoles)
 {
     bool res = false;
 
-    m_contour->validate();
+    m_outline->validate();
 
-    res = m_contour->isValid() || res;
+    res = m_outline->isValid() || res;
 
     if (!res)
         return false;
@@ -166,15 +175,20 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 {
     deleteTriangles();
 
-    if (!m_contour->isValid())
+    if (!m_outline->isValid())
         return;
 
-    p2t::CDT *p2tCdt = new p2t::CDT(m_contour->m_data);
+    m_outline->clearTriDataRef();
+
+    p2t::CDT *p2tCdt = new p2t::CDT(m_outline->m_data);
 
     if (withHoles) {
         for(int i = 0; i < m_holes.size(); i++) {
             if (!m_holes[i]->m_valid)
                 continue;
+
+            m_holes[i]->clearTriDataRef();
+
             p2tCdt->AddHole(m_holes[i]->m_data);
         }
     }
@@ -203,6 +217,10 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
         PointPtr p1 = dynamic_cast<t2d2::Point*>(st->GetPoint(1));
         PointPtr p2 = dynamic_cast<t2d2::Point*>(st->GetPoint(2));
 
+//        p0->edge_list.resize(0);
+//        p1->edge_list.resize(0);
+//        p2->edge_list.resize(0);
+
 
         if (updateAreaAndCOM) {
             float a = t2d2::util::triaArea (p0, p1, p2);
@@ -224,7 +242,6 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
     if (updateAreaAndCOM) {
         m_comX /= m_area;
         m_comY /= m_area;
-        Log()<<__FUNCTION__<<"area: "<<m_area<<"tri num:"<<m_triangleNum<<"withHoles:"<<withHoles;
     }
 
     delete p2tCdt;
@@ -232,25 +249,54 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 
 void Polygon::deleteTriangles()
 {
-    if (m_triangles)
+    if (m_triangles) {
         delete [] m_triangles;
+    }
     m_triangles = nullptr;
     m_triangleNum = 0;
 }
 
 void Polygon::updateBBox()
 {
-    m_contour->updateBBox();
+    m_outline->updateBBox ();
+}
+
+void Polygon::updateIndexator(int gridSize)
+{
+    m_outline->updateIndexator(gridSize);
+    for(int i = 0; i < m_holes.size(); i++)
+        m_holes[i]->updateIndexator(gridSize);
+}
+
+void Polygon::updateNormals()
+{
+    m_outline->updateNormals();
+    for(int i = 0; i < m_holes.size(); i++)
+        m_holes[i]->updateNormals();
 }
 
 BBox *Polygon::bbox()
 {
-    return m_contour->m_bbox;
+    return m_outline->m_bbox;
+}
+
+t2d2::Point *Polygon::findPoint(float x, float y)
+{
+    t2d2::Point *p = m_outline->indexator()->getPoint(x, y);
+    if (p!= nullptr)
+        return p;
+    for(int i = 0; i < m_holes.size(); i++) {
+        p = m_holes[i]->indexator()->getPoint(x, y);
+        if (p != nullptr)
+            return p;
+    }
+
+    return nullptr;
 }
 
 bool Polygon::isValid() const
 {
-    return m_contour->isValid();
+    return m_outline->isValid();
 }
 
 void Polygon::insertNext(Polygon *p)

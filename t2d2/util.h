@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <algorithm>
+
 #include "contour.h"
 
 
@@ -11,6 +13,11 @@ namespace t2d2 {
     class Contour;
 
     namespace util {
+
+        inline int _index(int i, int l)
+        {
+            return (l + (i % l)) % l;
+        }
 
         bool almostEqual2sComplement(float a, float b, int maxUlps);
 
@@ -55,6 +62,26 @@ namespace t2d2 {
         float triaArea(t2d2::Point *pA, t2d2::Point *pB, t2d2::Point * pC);
 
         void triMidPoint(t2d2::Point *pA, t2d2::Point *pB, t2d2::Point * pC, float *outX, float *outY);
+
+
+        inline float fastabs(float f)
+        {
+            int i=((*(int*)&f)&0x7fffffff);
+            return (*(float*)&i);
+        }
+
+        inline void fastnorm(float &nx, float & ny)
+        {
+            float ax = fastabs(nx);
+            float ay = fastabs(ny);
+
+            float ratio = 1.0f / std::max(ax, ay);
+
+            ratio *= (1.29289f - (ax + ay) * ratio * 0.29289f);
+
+            nx *= ratio;
+            ny *= ratio;
+        }
     }
 
 }

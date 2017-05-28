@@ -9,6 +9,7 @@
 #include "polygongroup.h"
 #include "mcash.h"
 #include "uvprojection.h"
+#include "gridindexator.h"
 
 
 
