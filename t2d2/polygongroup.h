@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "t2d2.h"
-#include "mcash.h"
+
 
 namespace t2d2 {
 
@@ -13,20 +13,22 @@ enum MCashStageOptions;
 
 class MCash;
 class Polygon;
+class Borders;
 
 class PolygonGroup
 {
     Polygon *m_polygon;
+    Borders *m_borders;
 
 public :
 
-    PolygonGroup() : m_polygon(nullptr) {}
-    ~PolygonGroup() { deletePolygons(); }
+    PolygonGroup();
+    ~PolygonGroup();
 
     Polygon*    polygon() {return m_polygon;}
     Polygon*    addPolygon();
     void        deletePolygon(Polygon *p);
-
+    Borders*    borders() {return m_borders;}
 
     MCash *createMCash (t2d2::MCashContentOptions mcocOpt, t2d2::MCashStageOptions mcosOpt, int stride , int subMeshNum);
 

@@ -11,6 +11,7 @@
 #define _CAST_2POLY(x)      (static_cast<t2d2::Polygon*>(x))
 #define _CAST_2CONTOUR(x)   (static_cast<t2d2::Contour*>(x))
 #define _CAST_2MCASH(x)     (static_cast<t2d2::MCash*>(x))
+#define _CAST_2BORDERS(x)   (static_cast<t2d2::Borders*>(x))
 
 int t2d2_version()
 {
@@ -100,6 +101,12 @@ void t2d2_polygonGroupDeletePolygon(T2d2Hndl pg, T2d2Hndl poly)
 {
     _CAST_2POLY_G(pg)->deletePolygon(_CAST_2POLY(poly));
 }
+
+T2d2Hndl t2d2_polygonGroupGetBorders(T2d2Hndl pg)
+{
+    return _CAST_2POLY_G(pg)->borders();
+}
+
 
 T2d2Hndl t2d2_polygonGroupCreateMCash(T2d2Hndl pg, int contOpt, int stageOpt, int stride, int subMeshNumber)
 {
@@ -387,6 +394,71 @@ void t2d2_contourGetDotPrValues(T2d2Hndl cntr, int startIndex, int length, float
     _CAST_2CONTOUR(cntr)->getDotPrValues(startIndex, length, out);
 }
 
+
+unsigned int t2d2_bordersGetMask(T2d2Hndl b)
+{
+    return _CAST_2BORDERS(b)->borderMask();
+}
+
+void t2d2_bordersSetMask(T2d2Hndl b, unsigned int mask)
+{
+    _CAST_2BORDERS(b)->setBordersMask(mask);
+}
+
+bool t2d2_bordersIsEnabled(T2d2Hndl b, unsigned int index)
+{
+    return _CAST_2BORDERS(b)->borderEnabled(index);
+}
+
+float t2d2_bordersGetOffset(T2d2Hndl b, unsigned int index)
+{
+    return _CAST_2BORDERS(b)->border(index)->offset();
+}
+
+float t2d2_bordersGetWidth(T2d2Hndl b, unsigned int index)
+{
+    return _CAST_2BORDERS(b)->border(index)->width();
+}
+
+void t2d2_bordersGetUVOffset(T2d2Hndl b, unsigned int index, float *out)
+{
+    t2d2::Border *border = _CAST_2BORDERS(b)->border(index);
+    out[0] = border->uOffset();
+    out[1] = border->vOffset();
+}
+
+void t2d2_bordersGetUVScale(T2d2Hndl b, unsigned int index, float *out)
+{
+    t2d2::Border *border = _CAST_2BORDERS(b)->border(index);
+    out[0] = border->uScale();
+    out[1] = border->vScale();
+}
+
+void t2d2_bordersSetOffset(T2d2Hndl b, unsigned int index, float offset)
+{
+    _CAST_2BORDERS(b)->border(index)->setOffset(offset);
+}
+
+void t2d2_bordersSetWidth(T2d2Hndl b, unsigned int index, float width)
+{
+    _CAST_2BORDERS(b)->border(index)->setWidth(width);
+}
+
+void t2d2_bordersSetUVOffset(T2d2Hndl b, unsigned int index, float *offset)
+{
+    t2d2::Border *border = _CAST_2BORDERS(b)->border(index);
+    border->setUOffset(offset[0]);
+    border->setVOffset(offset[1]);
+}
+
+void t2d2_bordersSetUVScale(T2d2Hndl b, unsigned int index, float *scale)
+{
+    t2d2::Border *border = _CAST_2BORDERS(b)->border(index);
+    border->setUScale(scale[0]);
+    border->setVScale(scale[1]);
+}
+
+
 bool t2d2_mcashIsValid(T2d2Hndl mcash)
 {
     return _CAST_2MCASH(mcash)->isValid();
@@ -476,6 +548,7 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
 
 
 

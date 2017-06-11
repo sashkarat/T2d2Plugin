@@ -2,6 +2,18 @@
 
 using namespace t2d2;
 
+PolygonGroup::PolygonGroup() :
+    m_polygon(nullptr)
+{
+    m_borders = new Borders();
+}
+
+PolygonGroup::~PolygonGroup()
+{
+    delete m_borders;
+    deletePolygons();
+}
+
 Polygon *PolygonGroup::addPolygon()
 {
     if (m_polygon == nullptr) {

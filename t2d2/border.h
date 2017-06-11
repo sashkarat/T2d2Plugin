@@ -9,10 +9,6 @@ namespace t2d2 {
 
 class Border
 {
-
-static unsigned int g_bordersMask;
-static Border g_borders[32];
-
     float m_offset;
     float m_width;
     float m_uOffset;
@@ -22,44 +18,44 @@ static Border g_borders[32];
 
 public:
 
-    inline static unsigned int  borderMask()                    { return g_bordersMask; }
-    inline static void          setBorderMask(unsigned int bm)  { g_bordersMask = bm; }
-    inline static unsigned int  maxBorders() { return 32; }
-    inline static unsigned int  mask(unsigned int index)        { return (1 << index); }
-    inline static bool          borderEnabled(unsigned int index) {return (g_bordersMask & mask(index)) != 0;}
-    static Border *             border(unsigned int index);
-
     Border();
 
-    inline float offset() const;
+    inline float offset() const  { return m_offset; }
 
-    inline void setOffset(float offset);
+    inline void setOffset(float offset) { m_offset = offset; }
 
-    inline float width() const;
+    inline float width() const {return m_width; }
 
-    inline void setWidth(float width);
+    inline void setWidth(float width) { m_width = width; }
 
-    inline float uOffset() const;
+    inline float uOffset() const { return m_uOffset; }
 
-    inline void setUOffset(float uOffset);
+    inline void setUOffset(float uOffset) { m_uOffset = uOffset; }
 
-    inline float vOffset() const;
+    inline float vOffset() const { return m_vOffset; }
 
-    inline void setVOffset(float vOffset);
+    inline void setVOffset(float vOffset) { m_vOffset = vOffset; }
 
-    inline float uScale() const;
+    inline float uScale() const {return m_uScale; }
 
-    inline void setUScale(float uScale);
+    inline void setUScale(float uScale) { m_uScale = uScale; }
 
-    inline float vScale() const;
+    inline float vScale() const { return m_vScale; }
 
-    inline void setVScale(float vScale);
+    inline void setVScale(float vScale) { m_vScale = vScale; }
 };
 
 
 class Borders {
-    unsigned int m_borderMask;
+    unsigned int m_bordersMask;
     Border m_borders[T2D2_MAXBORDERS];
+public:
+    Borders() : m_bordersMask(0x00) {}
+    inline static unsigned int  mask(unsigned int index)            { return (1 << index); }
+    inline unsigned int         borderMask()                        { return m_bordersMask;}
+    inline void                 setBordersMask(unsigned int mask)   {m_bordersMask = mask;}
+    inline bool                 borderEnabled(unsigned int index)   {return (m_bordersMask & mask(index)) != 0;}
+    inline Border*              border(unsigned int index)          {return m_borders + index; }
 };
 
 }

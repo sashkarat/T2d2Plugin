@@ -66,6 +66,8 @@ extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupGetPolygon     (T2d2Hndl pg);
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupAddPolygon     (T2d2Hndl pg);
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeletePolygon  (T2d2Hndl pg, T2d2Hndl poly);
 
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupGetBorders     (T2d2Hndl pg);
+
 
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateMCash    (T2d2Hndl pg, int contOpt, int stageOpt, int stride, int subMeshNumber);
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeleteMCash   (T2d2Hndl pg, T2d2Hndl mcash);
@@ -150,9 +152,19 @@ extern "C" T2D2_EXPORT void          t2d2_contourGetMiters      (T2d2Hndl cntr, 
 
 extern "C" T2D2_EXPORT void          t2d2_contourGetDotPrValues (T2d2Hndl cntr, int startIndex, int length, float *out);
 
-// border params func
+// borders params func
 
-
+extern "C" T2D2_EXPORT  unsigned int    t2d2_bordersGetMask     (T2d2Hndl b);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetMask     (T2d2Hndl b, unsigned int mask);
+extern "C" T2D2_EXPORT  bool            t2d2_bordersIsEnabled   (T2d2Hndl b, unsigned int index);
+extern "C" T2D2_EXPORT  float           t2d2_bordersGetOffset   (T2d2Hndl b, unsigned int index);
+extern "C" T2D2_EXPORT  float           t2d2_bordersGetWidth    (T2d2Hndl b, unsigned int index);
+extern "C" T2D2_EXPORT  void            t2d2_bordersGetUVOffset (T2d2Hndl b, unsigned int index, float *out);
+extern "C" T2D2_EXPORT  void            t2d2_bordersGetUVScale  (T2d2Hndl b, unsigned int index, float *out);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetOffset   (T2d2Hndl b, unsigned int index, float offset);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetWidth    (T2d2Hndl b, unsigned int index, float width);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVOffset (T2d2Hndl b, unsigned int index, float* offset);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVScale  (T2d2Hndl b, unsigned int index, float* scale);
 
 // mesh cash func
 

@@ -34,13 +34,13 @@ SOURCES += \
     t2d2/util.cpp \
     t2d2/bbox.cpp \
     t2d2/polygon.cpp \
-    t2d2plugin.cpp \
     t2d2/mcash.cpp \
     t2d2/polygongroup.cpp \
     t2d2/contour.cpp \
     t2d2/uvprojection.cpp \
     t2d2/gridindexator.cpp \
-    t2d2/border.cpp
+    t2d2/border.cpp \
+    t2d2plugin.cpp
 
 HEADERS += \
     clipperlib_f/clipper.hpp \
