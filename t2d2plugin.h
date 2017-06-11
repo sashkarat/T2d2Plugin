@@ -86,7 +86,7 @@ extern "C" T2D2_EXPORT void         t2d2_polygonDeleteHole          (T2d2Hndl po
 extern "C" T2D2_EXPORT void         t2d2_polygonUpdateBBox          (T2d2Hndl poly);
 extern "C" T2D2_EXPORT void         t2d2_polygonGetBBox             (T2d2Hndl poly, float *out, int stride);
 extern "C" T2D2_EXPORT void         t2d2_polygonUpdateIndexator     (T2d2Hndl poly, int gridSize);
-extern "C" T2D2_EXPORT void         t2d2_polygonUpdateNormals       (T2d2Hndl poly);
+extern "C" T2D2_EXPORT void         t2d2_polygonUpdateBorderGeometry(T2d2Hndl poly);
 
 extern "C" T2D2_EXPORT void         t2d2_polygonSetUvProjectionMatrix4x4     (T2d2Hndl poly, float *data);
 
@@ -142,14 +142,19 @@ extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue3d (T2d2Hndl cntr, floa
 
 extern "C" T2D2_EXPORT void          t2d2_contourSetBorderFlags (T2d2Hndl cntr, int startIndex, int *flags, int length);
 
-extern "C" T2D2_EXPORT void          t2d2_contourUpdateNormals  (T2d2Hndl cntr);
+extern "C" T2D2_EXPORT void          t2d2_contourUpdateBorderGeometry  (T2d2Hndl cntr);
 
 extern "C" T2D2_EXPORT void          t2d2_contourGetNormals     (T2d2Hndl cntr, int startIndex, int length, float *out);
+
+extern "C" T2D2_EXPORT void          t2d2_contourGetMiters      (T2d2Hndl cntr, int startIndex, int length, float *out);
+
+extern "C" T2D2_EXPORT void          t2d2_contourGetDotPrValues (T2d2Hndl cntr, int startIndex, int length, float *out);
+
+// border params func
 
 
 
 // mesh cash func
-
 
 extern "C" T2D2_EXPORT bool         t2d2_mcashIsValid           (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashStride            (T2d2Hndl mcash);

@@ -10,6 +10,7 @@
 #include "mcash.h"
 #include "uvprojection.h"
 #include "gridindexator.h"
+#include "border.h"
 
 
 

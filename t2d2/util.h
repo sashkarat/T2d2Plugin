@@ -82,6 +82,11 @@ namespace t2d2 {
             nx *= ratio;
             ny *= ratio;
         }
+
+        inline float dot(float x0, float y0, float x1, float y1)
+        {
+            return x0 * x1 + y0 * y1;
+        }
     }
 
 }

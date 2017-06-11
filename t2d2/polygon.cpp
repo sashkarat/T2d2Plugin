@@ -268,11 +268,11 @@ void Polygon::updateIndexator(int gridSize)
         m_holes[i]->updateIndexator(gridSize);
 }
 
-void Polygon::updateNormals()
+void Polygon::updateBorderGeometry()
 {
-    m_outline->updateNormals();
+    m_outline->updateBorderGeometry();
     for(int i = 0; i < m_holes.size(); i++)
-        m_holes[i]->updateNormals();
+        m_holes[i]->updateBorderGeometry();
 }
 
 BBox *Polygon::bbox()

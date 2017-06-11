@@ -39,7 +39,8 @@ SOURCES += \
     t2d2/polygongroup.cpp \
     t2d2/contour.cpp \
     t2d2/uvprojection.cpp \
-    t2d2/gridindexator.cpp
+    t2d2/gridindexator.cpp \
+    t2d2/border.cpp
 
 HEADERS += \
     clipperlib_f/clipper.hpp \
@@ -60,7 +61,8 @@ HEADERS += \
     t2d2/polygongroup.h \
     t2d2/contour.h \
     t2d2/uvprojection.h \
-    t2d2/gridindexator.h
+    t2d2/gridindexator.h \
+    t2d2/border.h
 
 android {
     #message(ANDROID SPEC)

@@ -25,18 +25,27 @@ public:
     Contour*    m_contour;
     int         m_index;
     int         m_borderFlags;
-    float       m_nx;
-    float       m_ny;
+    float       m_miterX;
+    float       m_miterY;
+    float       m_dotPr;
+    float       m_normX;
+    float       m_normY;
 
     Point(Contour *contour) :
         p2t::Point(),
-        m_contour(contour), m_index(-1), m_borderFlags(0), m_nx(0), m_ny(0) {}
+        m_contour(contour), m_index(-1), m_borderFlags(0), m_normX(0), m_normY(0), m_miterX(0), m_miterY(0), m_dotPr(0) {}
 
     Point(float x, float y, Contour *contour) :
         p2t::Point(x, y), m_contour(contour),
-        m_index(-1), m_borderFlags(0), m_nx(0), m_ny(0) {}
+        m_index(-1), m_borderFlags(0), m_normX(0), m_normY(0), m_miterX(0), m_miterY(0), m_dotPr(0) {}
+
+    inline bool isBorderGeometryValid() {
+        return (*(reinterpret_cast<int *>(&m_dotPr)) != 0);
+    }
+
 };
 
+typedef t2d2::Point* PointPtr;
 
 class Contour
 {
@@ -82,9 +91,12 @@ public:
     GridIndexator *indexator();
 
     void setBorderFlags(int startIndex, int *flags, int length);
-    void updateNormal(int index);
-    void updateNormals();
+    void updateNormal(t2d2::PointPtr p, t2d2::PointPtr next);
+    void updateMiter(PointPtr prev, PointPtr p);
+    void updateBorderGeometry();
     void getNormals(unsigned int startIndex, int length, float *out);
+    void getMiters(unsigned int startIndex, int length, float *out);
+    void getDotPrValues(unsigned int startIndex, int length, float *out);
 
     int getCashOffset() const;
     void setCashOffset(int cashOffset);

@@ -53,7 +53,7 @@ void Contour::saveToFile(Contour *c, std::ofstream &fs)
 
     fs.write((char *)&s, sizeof(int));
 
-    static float data[4];
+    static float data[7];
 
     for(int i =0; i < c->m_data.size(); i++) {
 
@@ -61,8 +61,11 @@ void Contour::saveToFile(Contour *c, std::ofstream &fs)
 
         data[0] = p->x;
         data[1] = p->y;
-        data[2] = p->m_nx;
-        data[3] = p->m_ny;
+        data[2] = p->m_normX;
+        data[3] = p->m_normY;
+        data[4] = p->m_miterX;
+        data[5] = p->m_miterY;
+        data[6] = p->m_dotPr;
 
         fs.write((char*)data, sizeof(float) * 4);
         fs.write((char*)(&(p->m_borderFlags)), sizeof(int));
@@ -76,7 +79,7 @@ void Contour::loadFromFile(Contour *c, std::ifstream &fs)
     int s = 0;
     fs.read((char*)&s, sizeof(int));
 
-    static float data[4];
+    static float data[7];
 
     for (int i = 0; i < s; i++) {
 
@@ -86,8 +89,11 @@ void Contour::loadFromFile(Contour *c, std::ifstream &fs)
 
         p->x = data[0];
         p->y = data[1];
-        p->m_nx = data[2];
-        p->m_ny = data[3];
+        p->m_normX = data[2];
+        p->m_normY = data[3];
+        p->m_miterX = data[4];
+        p->m_miterY = data[5];
+        p->m_dotPr = data[6];
 
         fs.read((char*)(&(p->m_borderFlags)), sizeof(int));
 
@@ -326,43 +332,78 @@ void Contour::setBorderFlags(int startIndex, int *flags, int length)
         dynamic_cast<t2d2::Point*>(m_data[i])->m_borderFlags = *flags++;
 }
 
-void Contour::updateNormal(int index)
+void Contour::updateNormal(t2d2::PointPtr p, t2d2::PointPtr next)
 {
-    t2d2::Point *pA = dynamic_cast<t2d2::Point*>((*this)[index-1]);
-    t2d2::Point *pB = dynamic_cast<t2d2::Point*>((*this)[index]);
-    t2d2::Point *pC = dynamic_cast<t2d2::Point*>((*this)[index+1]);
+    float dx = next->x - p->x;
+    float dy = next->y - p->y;
 
-    float dx0 = pB->x - pA->x;
-    float dy0 = pB->y - pA->y;
+    p->m_normX = dy;
+    p->m_normY = -dx;
 
-    float dx1 = pC->x - pB->x;
-    float dy1 = pC->y - pB->y;
-
-    float nx0 = dy0;
-    float ny0 = -dx0;
-
-    float nx1 = dy1;
-    float ny1 = -dx1;
-
-    pB->m_nx = (nx0 + nx1) / 2;
-    pB->m_ny = (ny0 + ny1) / 2;
-
-    t2d2::util::fastnorm(pB->m_nx, pB->m_ny);
+    t2d2::util::fastnorm(p->m_normX, p->m_normY);
 }
 
-void Contour::updateNormals()
+void Contour::updateMiter(t2d2::PointPtr prev, t2d2::PointPtr p)
 {
-    for(int i = 0; i < m_data.size(); i++ )
-        updateNormal(i);
+    float nx0 = prev->m_normX;
+    float ny0 = prev->m_normY;
+
+    float nx1 = p->m_normX;
+    float ny1 = p->m_normY;
+
+    p->m_miterX = nx0 + nx1;
+    p->m_miterY = ny0 + ny1;
+
+    t2d2::util::fastnorm(p->m_miterX, p->m_miterY);
+
+    p->m_dotPr = t2d2::util::dot(p->m_miterX, p->m_miterY, prev->m_normX, prev->m_normY);
+}
+
+void Contour::updateBorderGeometry()
+{
+    t2d2::PointPtr prev = dynamic_cast<t2d2::PointPtr>((*this)[-1]);
+    t2d2::PointPtr p    = dynamic_cast<t2d2::PointPtr>((*this)[0]);
+    t2d2::PointPtr next = dynamic_cast<t2d2::PointPtr>((*this)[1]);
+
+    updateNormal(prev, p);
+
+    for(int i = 0; i < m_data.size(); i++ ) {
+        prev = dynamic_cast<t2d2::PointPtr>((*this)[i - 1]);
+        p    = dynamic_cast<t2d2::PointPtr>((*this)[i]);
+        next = dynamic_cast<t2d2::PointPtr>((*this)[i + 1]);
+
+        updateNormal(p, next);
+        updateMiter(prev, p);
+    }
+
 }
 
 void Contour::getNormals(unsigned int startIndex, int length, float *out)
 {
     for(int i = startIndex; i < length; i++) {
         t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
-        out[0] = p->m_nx;
-        out[1] = p->m_ny;
+        out[0] = p->m_normX;
+        out[1] = p->m_normY;
         out += 2;
+    }
+}
+
+void Contour::getMiters(unsigned int startIndex, int length, float *out)
+{
+    for(int i = startIndex; i < length; i++) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
+        out[0] = p->m_miterX;
+        out[1] = p->m_miterY;
+        out += 2;
+    }
+}
+
+void Contour::getDotPrValues(unsigned int startIndex, int length, float *out)
+{
+    for(int i = startIndex; i < length; i++) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
+        *out = p->m_dotPr;
+        out++;
     }
 }
 

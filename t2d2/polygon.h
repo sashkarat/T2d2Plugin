@@ -94,7 +94,7 @@ public:
 
     void updateBBox();
     void updateIndexator(int gridSize);
-    void updateNormals();
+    void updateBorderGeometry();
 
     BBox *bbox();
 

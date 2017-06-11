@@ -213,9 +213,9 @@ void t2d2_polygonUpdateIndexator(T2d2Hndl poly, int gridSize)
     _CAST_2POLY(poly)->updateIndexator (gridSize);
 }
 
-void t2d2_polygonUpdateNormals(T2d2Hndl poly)
+void t2d2_polygonUpdateBorderGeometry(T2d2Hndl poly)
 {
-    _CAST_2POLY(poly)->updateNormals();
+    _CAST_2POLY(poly)->updateBorderGeometry();
 }
 
 void t2d2_polygonSetUvProjectionMatrix4x4(T2d2Hndl poly, float *data)
@@ -367,9 +367,9 @@ void t2d2_contourSetBorderFlags(T2d2Hndl cntr, int startIndex, int *flags, int l
     _CAST_2CONTOUR(cntr)->setBorderFlags(startIndex, flags, length);
 }
 
-void t2d2_contourUpdateNormals(T2d2Hndl cntr)
+void t2d2_contourUpdateBorderGeometry(T2d2Hndl cntr)
 {
-    _CAST_2CONTOUR(cntr)->updateNormals();
+    _CAST_2CONTOUR(cntr)->updateBorderGeometry();
 }
 
 void t2d2_contourGetNormals(T2d2Hndl cntr, int startIndex, int length, float *out)
@@ -377,7 +377,15 @@ void t2d2_contourGetNormals(T2d2Hndl cntr, int startIndex, int length, float *ou
     _CAST_2CONTOUR(cntr)->getNormals(startIndex, length, out);
 }
 
+void t2d2_contourGetMiters(T2d2Hndl cntr, int startIndex, int length, float *out)
+{
+    _CAST_2CONTOUR(cntr)->getMiters(startIndex, length, out);
+}
 
+void t2d2_contourGetDotPrValues(T2d2Hndl cntr, int startIndex, int length, float *out)
+{
+    _CAST_2CONTOUR(cntr)->getDotPrValues(startIndex, length, out);
+}
 
 bool t2d2_mcashIsValid(T2d2Hndl mcash)
 {
@@ -468,6 +476,9 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
+
+
 
 
 
