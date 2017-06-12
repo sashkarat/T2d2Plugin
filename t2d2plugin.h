@@ -165,6 +165,8 @@ extern "C" T2D2_EXPORT  void            t2d2_bordersSetOffset   (T2d2Hndl b, uns
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetWidth    (T2d2Hndl b, unsigned int index, float width);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVOffset (T2d2Hndl b, unsigned int index, float* offset);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVScale  (T2d2Hndl b, unsigned int index, float* scale);
+extern "C" T2D2_EXPORT  int             t2d2_bordersGetSubMeshIndex (T2d2Hndl b, unsigned int index);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetSubMeshIndex (T2d2Hndl b, unsigned int index, int smi);
 
 // mesh cash func
 

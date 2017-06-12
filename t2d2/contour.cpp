@@ -67,7 +67,7 @@ void Contour::saveToFile(Contour *c, std::ofstream &fs)
         data[5] = p->m_miterY;
         data[6] = p->m_dotPr;
 
-        fs.write((char*)data, sizeof(float) * 4);
+        fs.write((char*)data, sizeof(float) * 7);
         fs.write((char*)(&(p->m_borderFlags)), sizeof(int));
     }
 }
@@ -77,13 +77,12 @@ void Contour::loadFromFile(Contour *c, std::ifstream &fs)
     c->m_bbox->reset();
     c->m_data.clear();
     int s = 0;
-    fs.read((char*)&s, sizeof(int));
 
     static float data[7];
 
     for (int i = 0; i < s; i++) {
 
-        fs.read((char*)data, sizeof(float)*4);
+        fs.read((char*)data, sizeof(float)*7);
 
         t2d2::Point *p = new t2d2::Point(c);
 

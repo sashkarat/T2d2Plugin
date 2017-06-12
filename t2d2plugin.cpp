@@ -458,6 +458,16 @@ void t2d2_bordersSetUVScale(T2d2Hndl b, unsigned int index, float *scale)
     border->setVScale(scale[1]);
 }
 
+int t2d2_bordersGetSubMeshIndex(T2d2Hndl b, unsigned int index)
+{
+    return _CAST_2BORDERS(b)->border(index)->subMeshIndex();
+}
+
+void t2d2_bordersSetSubMeshIndex(T2d2Hndl b, unsigned int index, int smi)
+{
+    _CAST_2BORDERS(b)->border(index)->setSubMeshIndex(smi);
+}
+
 
 bool t2d2_mcashIsValid(T2d2Hndl mcash)
 {

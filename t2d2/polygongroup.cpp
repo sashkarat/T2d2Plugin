@@ -64,6 +64,8 @@ void PolygonGroup::saveToFile(PolygonGroup *pg, std::ofstream &fs)
         nf = (poly)?1:0;
         fs.write(&nf, 1);
     }
+
+    t2d2::Borders::saveToFile(pg->m_borders, fs);
 }
 
 PolygonGroup *PolygonGroup::loadFromFile(std::ifstream &fs)
@@ -80,9 +82,11 @@ PolygonGroup *PolygonGroup::loadFromFile(std::ifstream &fs)
             break;
         }
     }
+
+    t2d2::Borders::loadFromFile(pg->m_borders, fs);
+
     return pg;
 }
-
 
 void PolygonGroup::deletePolygons()
 {

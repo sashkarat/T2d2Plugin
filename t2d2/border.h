@@ -16,6 +16,8 @@ class Border
     float m_uScale;
     float m_vScale;
 
+    int m_subMeshIndex;
+
 public:
 
     Border();
@@ -43,6 +45,14 @@ public:
     inline float vScale() const { return m_vScale; }
 
     inline void setVScale(float vScale) { m_vScale = vScale; }
+
+    inline int subMeshIndex() { return m_subMeshIndex; }
+
+    inline void setSubMeshIndex(int smi) { m_subMeshIndex = smi; }
+
+    static void saveToFile(Border *b, std::ofstream &fs);
+
+    static void loadFromFile(Border * b, std::ifstream &fs);
 };
 
 
@@ -56,6 +66,9 @@ public:
     inline void                 setBordersMask(unsigned int mask)   {m_bordersMask = mask;}
     inline bool                 borderEnabled(unsigned int index)   {return (m_bordersMask & mask(index)) != 0;}
     inline Border*              border(unsigned int index)          {return m_borders + index; }
+
+    static void saveToFile(Borders *bs, std::ofstream &fs);
+    static void loadFromFile(Borders *bs, std::ifstream &fs);
 };
 
 }
