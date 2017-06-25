@@ -3,16 +3,6 @@
 
 using namespace t2d2;
 
-int Polygon::cashTriOffset() const
-{
-    return m_cashTriOffset;
-}
-
-void Polygon::setCashTriOffset(int cashTriOffset)
-{
-    m_cashTriOffset = cashTriOffset;
-}
-
 void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
 {
     Contour::saveToFile(poly->m_outline, fs);
@@ -58,6 +48,7 @@ Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(null
     m_cashTriOffset = -1;
 
     m_genMesh = true;
+    m_genBorders = false;
     m_genCollider = false;
     m_clippingSubj = true;
     m_clippingClip = false;

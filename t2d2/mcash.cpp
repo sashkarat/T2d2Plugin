@@ -129,7 +129,7 @@ bool MCash::validate()
 
 void MCash::allocData()
 {
-    if (((m_mcosOpt & mcosAllocTriangles) != 0) && ((m_mcosOpt & mcosTraingulate) != 0))
+    if (needTriAllocation())
         m_smTriangles = new SubMeshTriangles[m_subMeshNumber];
 
     Polygon *poly = m_pg->polygon();
@@ -147,7 +147,7 @@ void MCash::allocData()
         poly = poly->next();
     }
 
-    if (m_mcosOpt & mcosAllocVertices) {
+    if (m_vertexNumber > 0) {
         m_vertices = new float [m_vertexNumber * m_stride];
         if (m_mcosOpt & mcosProcessUV)
             m_uv = new float [m_vertexNumber * 2];
@@ -280,8 +280,12 @@ bool MCash::contentCheck(Polygon *poly)
     if (m_mcocOpt & t2d2::mcocAny)
         return true;
 
-    if (poly->genMesh()  && (m_mcocOpt & t2d2::mcocMesh))
-        return (poly->subMeshIndex() < m_subMeshNumber);
+    if (m_mcocOpt & t2d2::mcocMesh) {
+        if (poly->genBorders())
+            return true;
+        if (poly->genMesh())
+            return (poly->subMeshIndex() < m_subMeshNumber);
+    }
 
     if (poly->genCollider() && (m_mcocOpt & t2d2::mcocCollider))
         return true;

@@ -14,7 +14,8 @@ enum MCashStageOptions {
     mcosAllocVertices   = 0x08,
     mcosProcessUV       = 0x10,
     mcosAllocTriangles  = 0x20,
-    mcosTriProcessing   = 0x28
+    mcosTriProcessing   = 0x28,
+    mcosGenBorders      = 0x40
 };
 
 enum MCashContentOptions {
@@ -100,7 +101,7 @@ protected:
     void setContourVerticesData(Contour * contour);
     void setTrianglesData(Polygon *poly);
 
-
+    inline bool needTriAllocation() {return (m_mcocOpt & (mcosAllocTriangles & mcosTraingulate) | mcosGenBorders) != 0; }
 
     bool contentCheck(Polygon *poly);
 

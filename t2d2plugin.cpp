@@ -296,18 +296,20 @@ void t2d2_polygonGetFlags(T2d2Hndl poly, bool *flags)
 {
     t2d2::Polygon *p = _CAST_2POLY(poly);
     flags[0] = p->genMesh();
-    flags[1] = p->genCollider();
-    flags[2] = p->clippingSubj();
-    flags[3] = p->clippingClip();
+    flags[1] = p->genBorders();
+    flags[2] = p->genCollider();
+    flags[3] = p->clippingSubj();
+    flags[4] = p->clippingClip();
 }
 
 void t2d2_polygonSetFlags(T2d2Hndl poly, bool *flags)
 {
     t2d2::Polygon *p = _CAST_2POLY(poly);
     p->setGenMesh       (flags[0]);
-    p->setGenCollider   (flags[1]);
-    p->setClippingSubj  (flags[2]);
-    p->setClippingClip  (flags[3]);
+    p->setGenBorders    (flags[1]);
+    p->setGenCollider   (flags[2]);
+    p->setClippingSubj  (flags[3]);
+    p->setClippingClip  (flags[4]);
 
 //    t2d2::Log()<<__FUNCTION__<<"genM="<<p->genMesh()<<"genColl="<<p->genCollider()<<"clSbj="<<p->clippingSubj()<<"clClp="<<p->clippingClip();
 

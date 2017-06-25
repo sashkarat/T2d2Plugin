@@ -54,6 +54,7 @@ protected:
     int                     m_cashTriOffset;
 
     bool                m_genMesh;
+    bool                m_genBorders;
     bool                m_genCollider;
     bool                m_clippingSubj;
     bool                m_clippingClip;
@@ -105,17 +106,19 @@ public:
     bool isValid() const;
 
     inline bool genMesh()      const {return m_genMesh;}
+    inline bool genBorders()   const {return m_genBorders;}
     inline bool genCollider()  const {return m_genCollider;}
     inline bool clippingSubj() const {return m_clippingSubj;}
     inline bool clippingClip() const {return m_clippingClip;}
 
-    void setGenMesh         (bool s) {m_genMesh = s;}
-    void setGenCollider     (bool s) {m_genCollider = s;}
-    void setClippingSubj    (bool s) {m_clippingSubj = s;}
-    void setClippingClip    (bool s) {m_clippingClip = s;}
+    inline void setGenMesh         (bool s) {m_genMesh = s;}
+    inline void setGenBorders      (bool s) {m_genBorders = s;}
+    inline void setGenCollider     (bool s) {m_genCollider = s;}
+    inline void setClippingSubj    (bool s) {m_clippingSubj = s;}
+    inline void setClippingClip    (bool s) {m_clippingClip = s;}
 
-    int cashTriOffset() const;
-    void setCashTriOffset(int cashTriOffset);
+    inline int cashTriOffset() const                {return m_cashTriOffset;}
+    inline void setCashTriOffset(int cashTriOffset) {m_cashTriOffset = cashTriOffset;}
 
     inline float getArea() const {return m_area;}
     inline float getComX() const {return m_comX;}
@@ -124,7 +127,7 @@ public:
     inline float getPivotX() const {return m_pivotX;}
     inline float getPivotY() const {return m_pivotY;}
 
-    void setPivot(float x, float y) {m_pivotX = x; m_pivotY = y;}
+    inline void setPivot(float x, float y) {m_pivotX = x; m_pivotY = y;}
 
     static void saveToFile(Polygon *poly, std::ofstream &fs);
     static void loadFromFile(Polygon *poly, std::ifstream &fs);
