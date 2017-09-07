@@ -11,6 +11,7 @@ class Border
 {
     float m_offset;
     float m_width;
+    float m_zOffset;
     float m_uOffset;
     float m_vOffset;
     float m_uScale;
@@ -29,6 +30,10 @@ public:
     inline float width() const {return m_width; }
 
     inline void setWidth(float width) { m_width = width; }
+
+    inline void setZOffset(float v) { m_zOffset = v; }
+
+    inline float zOffset() const { return m_zOffset; }
 
     inline float uOffset() const { return m_uOffset; }
 

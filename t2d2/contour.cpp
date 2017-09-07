@@ -78,6 +78,9 @@ void Contour::loadFromFile(Contour *c, std::ifstream &fs)
     c->m_data.clear();
     int s = 0;
 
+
+    fs.read((char *)&s, sizeof(int));
+
     static float data[7];
 
     for (int i = 0; i < s; i++) {
@@ -113,7 +116,9 @@ Contour::Contour(Polygon *poly, bool isContour) :
     m_isContour(isContour),
     m_cashOffset(-1),
     m_valid(false),
-    m_indexator(nullptr)
+    m_indexator(nullptr),
+    m_area(0.0f),
+    m_comX(0), m_comY(0)
 {
     m_bbox = new BBox();
 }
@@ -150,10 +155,10 @@ unsigned int Contour::length()
 
 t2d2::Point *Contour::getPoint(unsigned int index)
 {
-    if (index >= m_data.size()) {
-        Log(ltWarning)<<__FUNCTION__<<"index out of range";
-        return nullptr;
-    }
+//    if (index >= m_data.size()) {
+//        Log(ltWarning)<<__FUNCTION__<<"index out of range";
+//        return nullptr;
+//    }
     return dynamic_cast<t2d2::Point*>(m_data[index]);
 }
 
@@ -290,6 +295,9 @@ unsigned int Contour::addValue(float *in, unsigned int length, unsigned int stri
         m_bbox->addPoint(p);
 
     }
+
+    Log()<<__FUNCTION__<<"data size: "<<m_data.size();
+
     return length;
 }
 
@@ -316,9 +324,94 @@ GridIndexator *Contour::indexator()
     return m_indexator;
 }
 
+float Contour::updateArea()
+{
+    m_area = 0;
+    int c = static_cast<int>(m_data.size()) - 1;
+    if (c < 2)
+        return m_area;
+
+
+    //using a loop whith c == data.size - 1 to avoid %c operation
+    for( int i = 1; i < c; ++i ) {
+        p2t::Point *pi  = m_data[i];
+        p2t::Point *pi1 = m_data[i+1];
+        p2t::Point *pim1 = m_data[i-1];
+
+        m_area += pi->x * (pi1->y - pim1->y);
+    }
+
+    {
+        p2t::Point *pi  = m_data[c];
+        p2t::Point *pi1 = m_data[0];
+        p2t::Point *pim1 = m_data[c-1];
+
+        m_area += pi->x * (pi1->y - pim1->y);
+    }
+
+    {
+        p2t::Point *pi  = m_data[0];
+        p2t::Point *pi1 = m_data[1];
+        p2t::Point *pim1 = m_data[c];
+
+        m_area += pi->x * (pi1->y - pim1->y);
+    }
+
+    m_area /= 2;
+
+    return m_area;
+}
+
+void Contour::updateCOM()
+{
+    m_comX = m_comY = 0;
+    int c = static_cast<int>(m_data.size());
+
+    if (c < 3)
+        return;
+
+    float signedArea = 0;
+
+    for(int i = 0; i < c-1; i++) {
+        p2t::Point *p0 = m_data[i];
+        p2t::Point *p1 = m_data[i+1];
+
+        float sai = (p0->x * p1->y) - (p1->x * p0->y);
+        signedArea += sai;
+
+        m_comX += (p0->x + p1->x) * sai;
+        m_comY += (p0->y + p1->y) * sai;
+    }
+
+    {
+        p2t::Point *p0 = m_data[c-1];
+        p2t::Point *p1 = m_data[0];
+
+        float sai = (p0->x * p1->y) - (p1->x * p0->y);
+        signedArea += sai;
+
+        m_comX += (p0->x + p1->x) * sai;
+        m_comY += (p0->y + p1->y) * sai;
+    }
+
+    m_comX /= (3.0f * signedArea);
+    m_comY /= (3.0f * signedArea);
+}
+
+float Contour::getArea() const
+{
+    return m_area;
+}
+
+void Contour::getCOM(float *x, float *y)
+{
+    *x = m_comX;
+    *y = m_comY;
+}
+
 void Contour::setBorderFlags(int startIndex, int *flags, int length)
 {
-
+    Log()<<__FUNCTION__<<" startIndex: "<<startIndex<<" length: "<<length<<" data size: "<<m_data.size();
     if ((startIndex + length) > m_data.size()) {
         length = static_cast<int>(m_data.size()) - startIndex;
         if (length < 0)
@@ -329,6 +422,32 @@ void Contour::setBorderFlags(int startIndex, int *flags, int length)
 
     for(int i = startIndex; i < e; i++)
         dynamic_cast<t2d2::Point*>(m_data[i])->m_borderFlags = *flags++;
+}
+
+void Contour::updatePointPositions()
+{
+    t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[0]);
+    p->m_position = 0.0f;
+    float prevX = p->x;
+    float prevY = p->y;
+    float prevP = p->m_position;
+
+
+    unsigned int c = m_data.size();
+
+    for(unsigned int i = 1; i < c; i++) {
+        p = dynamic_cast<t2d2::Point*>(m_data[i]);
+        float dx = p->x - prevX;
+        float dy = p->y - prevY;
+        prevX = p->x;
+        prevY = p->y;
+
+        p->m_position = sqrtf(dx * dx + dy * dy) + prevP;
+
+        prevP = p->m_position;
+        Log()<<__FUNCTION__<<"i: "<<i<<" position: "<<p->m_position;
+    }
+
 }
 
 void Contour::updateNormal(t2d2::PointPtr p, t2d2::PointPtr next)
@@ -375,6 +494,7 @@ void Contour::updateBorderGeometry()
         updateMiter(prev, p);
     }
 
+    updatePointPositions();
 }
 
 void Contour::getNormals(unsigned int startIndex, int length, float *out)
@@ -402,6 +522,15 @@ void Contour::getDotPrValues(unsigned int startIndex, int length, float *out)
     for(int i = startIndex; i < length; i++) {
         t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
         *out = p->m_dotPr;
+        out++;
+    }
+}
+
+void Contour::getPositions(unsigned int startIndex, int length, float *out)
+{
+    for(int i = startIndex; i < length; i++) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
+        *out = p->m_position;
         out++;
     }
 }

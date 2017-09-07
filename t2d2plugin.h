@@ -15,27 +15,6 @@
     #define T2D2_EXPORT
 #endif
 
-
-enum MCStageOptions {
-    mcosValidate        = 0x01,
-    mcosTraingulate     = 0x02,
-    mcosUpdateArea      = 0x04,
-    mcosAllocVertices   = 0x08,
-    mcosProcessUV       = 0x10,
-    mcosAllocTriangles  = 0x20,
-    mcosTriProcessing   = 0x28
-};
-
-enum MCContentOptions {
-    mcocHoles       = 0x01,
-    mcocAny         = 0x02,
-    mcocMesh        = 0x04,
-    mcocCollider    = 0x08
-};
-
-
-
-
 typedef void (*LogCallback)(const char *);
 typedef void* T2d2Hndl;
 
@@ -54,8 +33,6 @@ extern "C" T2D2_EXPORT void t2d2_setLogFile(const char *szLogFileName, bool trun
 
 // polygon group func
 
-
-
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreate         ();
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupDelete         (T2d2Hndl pg);
 
@@ -68,10 +45,15 @@ extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeletePolygon  (T2d2Hndl pg, T2
 
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupGetBorders     (T2d2Hndl pg);
 
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateMeshCash   (T2d2Hndl pg, int subMeshNumber);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeleteMeshCash   (T2d2Hndl pg, T2d2Hndl mcash);
 
-extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateMCash    (T2d2Hndl pg, int contOpt, int stageOpt, int stride, int subMeshNumber);
-extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeleteMCash   (T2d2Hndl pg, T2d2Hndl mcash);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupUpdateColliderGeomValues (T2d2Hndl pg);
+extern "C" T2D2_EXPORT float    t2d2_polygonGroupGetColliderArea (T2d2Hndl pg);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupGetColliderCOM  (T2d2Hndl pg, float *out);
 
+extern "C" T2D2_EXPORT float     t2d2_polygonGroupGetColliderComX  (T2d2Hndl pg);
+extern "C" T2D2_EXPORT float     t2d2_polygonGroupGetColliderComY  (T2d2Hndl pg);
 
 
 // polygon func
@@ -81,6 +63,7 @@ extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetNext             (T2d2Hndl po
 extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetPrev             (T2d2Hndl poly);
 
 extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetContour          (T2d2Hndl poly);
+extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetOutline          (T2d2Hndl poly);
 extern "C" T2D2_EXPORT unsigned int t2d2_polygonGetHolesCount       (T2d2Hndl poly);
 extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetHole             (T2d2Hndl poly, unsigned int index);
 extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonAddHole             (T2d2Hndl poly);
@@ -98,6 +81,9 @@ extern "C" T2D2_EXPORT int          t2d2_polygonGetSubMeshIndex     (T2d2Hndl po
 extern "C" T2D2_EXPORT void         t2d2_polygonSetZValue           (T2d2Hndl poly, float zval);
 extern "C" T2D2_EXPORT void         t2d2_polygonSetSubMeshIndex     (T2d2Hndl poly, int smi);
 
+
+extern "C" T2D2_EXPORT void         t2d2_polygonUpdateArea          (T2d2Hndl poly);
+extern "C" T2D2_EXPORT void         t2d2_polygonUpdateCOM           (T2d2Hndl poly);
 
 extern "C" T2D2_EXPORT float        t2d2_polygonGetArea             (T2d2Hndl poly);
 extern "C" T2D2_EXPORT void         t2d2_polygonGetCOM              (T2d2Hndl poly, float *out);
@@ -152,6 +138,14 @@ extern "C" T2D2_EXPORT void          t2d2_contourGetMiters      (T2d2Hndl cntr, 
 
 extern "C" T2D2_EXPORT void          t2d2_contourGetDotPrValues (T2d2Hndl cntr, int startIndex, int length, float *out);
 
+extern "C" T2D2_EXPORT void          t2d2_contourUpdateArea     (T2d2Hndl cntr);
+
+extern "C" T2D2_EXPORT void          t2d2_contourUpdateCOM      (T2d2Hndl cntr);
+
+extern "C" T2D2_EXPORT float         t2d2_contourGetArea        (T2d2Hndl cntr);
+
+extern "C" T2D2_EXPORT void          t2d2_contourGetCOM         (T2d2Hndl cntr, float *out);
+
 // borders params func
 
 extern "C" T2D2_EXPORT  unsigned int    t2d2_bordersGetMask     (T2d2Hndl b);
@@ -159,10 +153,12 @@ extern "C" T2D2_EXPORT  void            t2d2_bordersSetMask     (T2d2Hndl b, uns
 extern "C" T2D2_EXPORT  bool            t2d2_bordersIsEnabled   (T2d2Hndl b, unsigned int index);
 extern "C" T2D2_EXPORT  float           t2d2_bordersGetOffset   (T2d2Hndl b, unsigned int index);
 extern "C" T2D2_EXPORT  float           t2d2_bordersGetWidth    (T2d2Hndl b, unsigned int index);
+extern "C" T2D2_EXPORT  float           t2d2_bordersGetZOffset  (T2d2Hndl b, unsigned int index);
 extern "C" T2D2_EXPORT  void            t2d2_bordersGetUVOffset (T2d2Hndl b, unsigned int index, float *out);
 extern "C" T2D2_EXPORT  void            t2d2_bordersGetUVScale  (T2d2Hndl b, unsigned int index, float *out);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetOffset   (T2d2Hndl b, unsigned int index, float offset);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetWidth    (T2d2Hndl b, unsigned int index, float width);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetZOffset  (T2d2Hndl b, unsigned int index, float zOffset);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVOffset (T2d2Hndl b, unsigned int index, float* offset);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVScale  (T2d2Hndl b, unsigned int index, float* scale);
 extern "C" T2D2_EXPORT  int             t2d2_bordersGetSubMeshIndex (T2d2Hndl b, unsigned int index);
@@ -171,7 +167,6 @@ extern "C" T2D2_EXPORT  void            t2d2_bordersSetSubMeshIndex (T2d2Hndl b,
 // mesh cash func
 
 extern "C" T2D2_EXPORT bool         t2d2_mcashIsValid           (T2d2Hndl mcash);
-extern "C" T2D2_EXPORT unsigned int t2d2_mcashStride            (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashVertexNumber      (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashSubMeshNumber     (T2d2Hndl mcash);
 extern "C" T2D2_EXPORT unsigned int t2d2_mcashTriangleNumber    (T2d2Hndl mcash, unsigned int smi);

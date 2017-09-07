@@ -32,6 +32,42 @@ void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
     }
 }
 
+void Polygon::updateArea()
+{
+    m_area = 0;
+    m_area = m_outline->updateArea();
+    for(int i = 0; i < m_holes.size(); i++)
+        m_area -= m_holes[i]->updateArea();
+}
+
+void Polygon::updateCOM()
+{
+    updateArea();
+
+    m_outline->updateCOM();
+    m_outline->getCOM(&m_comX, &m_comY);
+
+    float a = m_outline->getArea();
+
+    m_comX *= a;
+    m_comY *= a;
+
+    for(int i = 0; i < m_holes.size(); i++) {
+        Contour *hole = m_holes[i];
+        float ha = hole->getArea();
+        float x, y;
+        hole->updateCOM();
+        hole->getCOM(&x, &y);
+
+        m_comX -= x * ha;
+        m_comY -= y * ha;
+        a -= ha;
+    }
+
+    m_comX /= a;
+    m_comY /= a;
+}
+
 Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(nullptr)
 {
 
@@ -162,7 +198,7 @@ bool Polygon::validate(bool withHoles)
     return res;
 }
 
-void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withHoles)
+void Polygon::triangulate()
 {
     deleteTriangles();
 
@@ -173,15 +209,15 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 
     p2t::CDT *p2tCdt = new p2t::CDT(m_outline->m_data);
 
-    if (withHoles) {
-        for(int i = 0; i < m_holes.size(); i++) {
-            if (!m_holes[i]->m_valid)
-                continue;
+    for(int i = 0; i < m_holes.size(); i++) {
+        Contour *holePtr = m_holes[i];
 
-            m_holes[i]->clearTriDataRef();
+        if (!holePtr->m_valid)
+            continue;
 
-            p2tCdt->AddHole(m_holes[i]->m_data);
-        }
+        holePtr->clearTriDataRef();
+
+        p2tCdt->AddHole(holePtr->m_data);
     }
 
     p2tCdt->Triangulate();
@@ -190,16 +226,11 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 
     m_triangleNum = static_cast<unsigned int>(tri.size());
 
-    if (allocTriangles)
-        m_triangles = new Triangle[m_triangleNum];
+
+    m_triangles = new Triangle[m_triangleNum];
 
     Triangle *pt = m_triangles;
 
-    if (updateAreaAndCOM) {
-        m_area = 0;
-        m_comX = 0;
-        m_comY = 0;
-    }
 
     for(unsigned int i = 0; i < m_triangleNum; i++) {
         p2t::Triangle *st = tri[i];
@@ -213,26 +244,10 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 //        p2->edge_list.resize(0);
 
 
-        if (updateAreaAndCOM) {
-            float a = t2d2::util::triaArea (p0, p1, p2);
-            float x, y;
-            t2d2::util::triMidPoint (p0, p1, p2, &x, &y);
-            m_comX += x * a;
-            m_comY += y * a;
-            m_area += a;
-        }
-
-        if (allocTriangles) {
-            pt->points[0] = p0;
-            pt->points[1] = p1;
-            pt->points[2] = p2;
-            pt++;
-        }
-    }
-
-    if (updateAreaAndCOM) {
-        m_comX /= m_area;
-        m_comY /= m_area;
+        pt->points[0] = p0;
+        pt->points[1] = p1;
+        pt->points[2] = p2;
+        pt++;
     }
 
     delete p2tCdt;
@@ -240,9 +255,8 @@ void Polygon::triangulate(bool updateAreaAndCOM, bool allocTriangles, bool withH
 
 void Polygon::deleteTriangles()
 {
-    if (m_triangles) {
+    if (m_triangles)
         delete [] m_triangles;
-    }
     m_triangles = nullptr;
     m_triangleNum = 0;
 }

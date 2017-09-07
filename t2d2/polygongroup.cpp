@@ -6,6 +6,8 @@ PolygonGroup::PolygonGroup() :
     m_polygon(nullptr)
 {
     m_borders = new Borders();
+    m_colliderArea = 0;
+    m_colliderComX = m_colliderComY = 0;
 }
 
 PolygonGroup::~PolygonGroup()
@@ -35,20 +37,53 @@ void PolygonGroup::deletePolygon(Polygon *p)
     delete p;
 }
 
-MCash *PolygonGroup::createMCash(t2d2::MCashContentOptions mcocOpt, t2d2::MCashStageOptions mcosOpt, int stride, int subMeshNum)
+MeshCash *PolygonGroup::createMeshCash(int subMeshNum)
 {
-    MCash *mcash = new MCash(this);
-
-    mcash->allocate(mcocOpt, mcosOpt, stride, subMeshNum);
-
+    MeshCash *mcash = new MeshCash(this);
+    mcash->build(subMeshNum);
     return mcash;
 }
 
-void PolygonGroup::deleteMCash(MCash *mcash)
+void PolygonGroup::deleteMeshCash(MeshCash *mcash)
 {
     if (mcash)
         delete mcash;
 }
+
+void PolygonGroup::updateColliderGeometricValues()
+{
+    Polygon *poly = m_polygon;
+
+    m_colliderComX = m_colliderComY = 0;
+    m_colliderArea = 0;
+
+    while (poly != nullptr) {
+        if (poly->genCollider()) {
+            poly->updateCOM();
+
+            float a = poly->getArea();
+            float x = poly->getComX();
+            float y = poly->getComY();
+
+
+            m_colliderArea += a;
+
+            m_colliderComX += x * a;
+            m_colliderComY += y * a;
+        }
+
+        poly->next();
+    }
+
+    if (m_colliderArea == 0) {
+        m_colliderComX = m_colliderComY = 0;
+        return;
+    }
+
+    m_colliderComX /= m_colliderArea;
+    m_colliderComY /= m_colliderArea;
+}
+
 
 void PolygonGroup::saveToFile(PolygonGroup *pg, std::ofstream &fs)
 {

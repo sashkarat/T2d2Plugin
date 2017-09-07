@@ -12,6 +12,7 @@ enum MCashContentOptions;
 enum MCashStageOptions;
 
 class MCash;
+class MeshCash;
 class Polygon;
 class Borders;
 
@@ -19,6 +20,11 @@ class PolygonGroup
 {
     Polygon *m_polygon;
     Borders *m_borders;
+
+    float m_colliderArea;
+    float m_colliderComX;
+    float m_colliderComY;
+
 
 public :
 
@@ -30,9 +36,16 @@ public :
     void        deletePolygon(Polygon *p);
     Borders*    borders() {return m_borders;}
 
-    MCash *createMCash (t2d2::MCashContentOptions mcocOpt, t2d2::MCashStageOptions mcosOpt, int stride , int subMeshNum);
+    MeshCash *createMeshCash(int subMeshNum);
+    void deleteMeshCash (MeshCash *mcash);
 
-    void deleteMCash (MCash *mcash);
+    void updateColliderGeometricValues();
+
+    inline float getColliderArea() const {return m_colliderArea;}
+    inline void getColliderCOM(float *x, float *y) const {*x = m_colliderComX; *y = m_colliderComY;}
+    inline float getColliderComX() const {return m_colliderComX;}
+    inline float getColliderComY() const {return m_colliderComY;}
+
 
     static void             saveToFile(PolygonGroup *pg, std::ofstream &fs);
 

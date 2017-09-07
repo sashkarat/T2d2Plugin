@@ -84,7 +84,7 @@ public:
     Polygon::Triangle*  tri(int index);
 
     bool validate       (bool withHoles);
-    void triangulate    (bool updateAreaAndCOM, bool allocTriangles, bool withHoles);
+    void triangulate    ();
     void deleteTriangles();
 
     float            zValue()                   {return m_zValue;}
@@ -132,6 +132,8 @@ public:
     static void saveToFile(Polygon *poly, std::ofstream &fs);
     static void loadFromFile(Polygon *poly, std::ifstream &fs);
 
+    void updateArea();
+    void updateCOM();
 
 protected:
 

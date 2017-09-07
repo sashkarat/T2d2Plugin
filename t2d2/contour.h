@@ -30,6 +30,7 @@ public:
     float       m_dotPr;
     float       m_normX;
     float       m_normY;
+    float       m_position;
 
     Point(Contour *contour) :
         p2t::Point(),
@@ -62,6 +63,10 @@ protected:
     int                         m_cashOffset;
     bool                        m_valid;
 
+    float                       m_area;
+    float                       m_comX;
+    float                       m_comY;
+
     void    updateBBox();
 
 
@@ -90,13 +95,21 @@ public:
     void updateIndexator(int gridSize = 10);
     GridIndexator *indexator();
 
+    float   updateArea();
+    void    updateCOM();
+    float   getArea() const;
+    void    getCOM(float *x, float *y);
+
     void setBorderFlags(int startIndex, int *flags, int length);
+
+    void updatePointPositions();
     void updateNormal(t2d2::PointPtr p, t2d2::PointPtr next);
     void updateMiter(PointPtr prev, PointPtr p);
     void updateBorderGeometry();
     void getNormals(unsigned int startIndex, int length, float *out);
     void getMiters(unsigned int startIndex, int length, float *out);
     void getDotPrValues(unsigned int startIndex, int length, float *out);
+    void getPositions(unsigned int startIndex, int length, float *out);
 
     int getCashOffset() const;
     void setCashOffset(int cashOffset);
