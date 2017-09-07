@@ -232,11 +232,11 @@ void MeshCash::allocContourBorderData(Contour *cntr, int mask, unsigned int smi)
 
         if (state) {
             if (prevState)
-                m_vertexNumber += 2;
+                m_vertexNumber += 3;
             else
-                m_vertexNumber += 4;
+                m_vertexNumber += 5;
 
-            m_smTriangles[smi].m_triNum += 2;
+            m_smTriangles[smi].m_triNum += 3;
         }
         prevState = state;
     }
@@ -250,11 +250,11 @@ void MeshCash::allocContourBorderData(Contour *cntr, int mask, unsigned int smi)
 
         if (state) {
             if (prevState)
-                m_vertexNumber += 2;
+                m_vertexNumber += 3;
             else
-                m_vertexNumber += 4;
+                m_vertexNumber += 5;
 
-            m_smTriangles[smi].m_triNum += 2;
+            m_smTriangles[smi].m_triNum += 3;
         }
         prevState = state;
     }
@@ -384,7 +384,7 @@ void MeshCash::setContourBorderData(Contour *cntr, int mask, Border *brdr)
 
     bool prevState = false;
 
-    int p0_idx, p1_idx, p2_idx, p3_idx;
+    int p0_idx, p1_idx, p2_idx, p3_idx, p4_idx;
 
     float zValue = cntr->getPoly()->zValue() + brdr->zOffset();
     float offset = brdr->offset();
@@ -401,42 +401,40 @@ void MeshCash::setContourBorderData(Contour *cntr, int mask, Border *brdr)
 //                2 new points;
                 p0_idx = m_verticesDone - 2;
                 p3_idx = m_verticesDone - 1;
-                p1_idx = m_verticesDone;
-                p2_idx = m_verticesDone + 1;
+                p4_idx = m_verticesDone;
+                p1_idx = m_verticesDone + 1;
+                p2_idx = m_verticesDone + 2;
 
-                setBorderVertex(p1_idx, p1, zValue, offset, 0);
-                setBorderVertex(p2_idx, p1, zValue, offset + width, 1);
+                setBorderVertex(p1_idx, p1, zValue, offset, 0, brdr);
+                setBorderVertex(p2_idx, p1, zValue, offset + width, 1, brdr);
 
-//                setBorderUV(p1_idx, p1, 0, 0, brdr);
-//                setBorderUV(p2_idx, p1, 0, 1, brdr);
+                setBorderSegmentMidVertex(p4_idx, p2_idx, p3_idx, 1, brdr);
 
-                m_verticesDone += 2;
+                m_verticesDone += 3;
             } else {
 //                  4 new points
                 p0_idx = m_verticesDone;
                 p3_idx = m_verticesDone + 1;
-                p1_idx = m_verticesDone + 2;
-                p2_idx = m_verticesDone + 3;
+                p4_idx = m_verticesDone + 2;
+                p1_idx = m_verticesDone + 3;
+                p2_idx = m_verticesDone + 4;
 
 
-                setBorderVertex(p0_idx, p0, zValue, offset, 0);
-                setBorderVertex(p3_idx, p0, zValue, offset + width, 1);
+                setBorderVertex(p0_idx, p0, zValue, offset, 0, brdr);
+                setBorderVertex(p3_idx, p0, zValue, offset + width, 1, brdr);
 
-                setBorderVertex(p1_idx, p1, zValue, offset, 0);
-                setBorderVertex(p2_idx, p1, zValue, offset + width, 1);
+                setBorderVertex(p1_idx, p1, zValue, offset, 0, brdr);
+                setBorderVertex(p2_idx, p1, zValue, offset + width, 1, brdr);
 
-//                setBorderUV(p0_idx, p0, 0, 0, brdr);
-//                setBorderUV(p3_idx, p0, 0, 1, brdr);
+                setBorderSegmentMidVertex(p4_idx, p2_idx, p3_idx, 1, brdr);
 
-//                setBorderUV(p1_idx, p1, 0, 0, brdr);
-//                setBorderUV(p2_idx, p1, 0, 1, brdr);
-
-                m_verticesDone += 4;
+                m_verticesDone += 5;
 
             }
 
-            setBorderSegmentTriangle(p3_idx, p0_idx, p1_idx, brdr->subMeshIndex());
-            setBorderSegmentTriangle(p3_idx, p1_idx, p2_idx, brdr->subMeshIndex());
+            setBorderSegmentTriangle(p0_idx, p4_idx, p3_idx, brdr->subMeshIndex());
+            setBorderSegmentTriangle(p4_idx, p0_idx, p1_idx, brdr->subMeshIndex());
+            setBorderSegmentTriangle(p2_idx, p4_idx, p1_idx, brdr->subMeshIndex());
         }
         prevState = state;
     }
@@ -462,42 +460,39 @@ void MeshCash::setContourBorderData(Contour *cntr, int mask, Border *brdr)
 //                2 new points;
                 p0_idx = m_verticesDone - 2;
                 p3_idx = m_verticesDone - 1;
-                p1_idx = m_verticesDone;
-                p2_idx = m_verticesDone + 1;
+                p4_idx = m_verticesDone;
+                p1_idx = m_verticesDone + 1;
+                p2_idx = m_verticesDone + 2;
 
-                setBorderVertex(p1_idx, p1, zValue, offset, 0);
-                setBorderVertex(p2_idx, p1, zValue, offset + width, 1);
+                setBorderVertex(p1_idx, p1, zValue, offset, 0, brdr);
+                setBorderVertex(p2_idx, p1, zValue, offset + width, 1, brdr);
 
-//                setBorderUV(p1_idx, p1, 0, 0, brdr);
-//                setBorderUV(p2_idx, p1, 0, 1, brdr);
+                setBorderSegmentMidVertex(p4_idx, p2_idx, p3_idx, 1, brdr);
 
-                m_verticesDone += 2;
+                m_verticesDone += 3;
             } else {
 //                  4 new points
                 p0_idx = m_verticesDone;
                 p3_idx = m_verticesDone + 1;
-                p1_idx = m_verticesDone + 2;
-                p2_idx = m_verticesDone + 3;
+                p4_idx = m_verticesDone + 2;
+                p1_idx = m_verticesDone + 3;
+                p2_idx = m_verticesDone + 4;
 
 
-                setBorderVertex(p0_idx, p0, zValue, offset, 0);
-                setBorderVertex(p3_idx, p0, zValue, offset + width, 1);
+                setBorderVertex(p0_idx, p0, zValue, offset, 0, brdr);
+                setBorderVertex(p3_idx, p0, zValue, offset + width, 1, brdr);
 
-                setBorderVertex(p1_idx, p1, zValue, offset, 0);
-                setBorderVertex(p2_idx, p1, zValue, offset + width, 1);
+                setBorderVertex(p1_idx, p1, zValue, offset, 0, brdr);
+                setBorderVertex(p2_idx, p1, zValue, offset + width, 1, brdr);
 
-//                setBorderUV(p0_idx, p0, 0, 0, brdr);
-//                setBorderUV(p3_idx, p0, 0, 1, brdr);
+                setBorderSegmentMidVertex(p4_idx, p2_idx, p3_idx, 1, brdr);
 
-//                setBorderUV(p1_idx, p1, 0, 0, brdr);
-//                setBorderUV(p2_idx, p1, 0, 1, brdr);
-
-
-                m_verticesDone += 4;
+                m_verticesDone += 5;
             }
 
-            setBorderSegmentTriangle(p3_idx, p1_idx, p0_idx, brdr->subMeshIndex());
-            setBorderSegmentTriangle(p3_idx, p2_idx, p1_idx, brdr->subMeshIndex());
+            setBorderSegmentTriangle(p0_idx, p4_idx, p3_idx, brdr->subMeshIndex());
+            setBorderSegmentTriangle(p4_idx, p0_idx, p1_idx, brdr->subMeshIndex());
+            setBorderSegmentTriangle(p2_idx, p4_idx, p1_idx, brdr->subMeshIndex());
 
             p1->m_position = pp;
         }
@@ -505,7 +500,7 @@ void MeshCash::setContourBorderData(Contour *cntr, int mask, Border *brdr)
     }
 }
 
-void MeshCash::setBorderVertex(int idx, Point *p, float z, float offset, float v)
+void MeshCash::setBorderVertex(int idx, Point *p, float z, float offset, float v, Border *brdr)
 {
     idx;
 
@@ -517,22 +512,35 @@ void MeshCash::setBorderVertex(int idx, Point *p, float z, float offset, float v
 
     int ti = idx * 2;
 
-
     float xn = p->x + p->m_normX * offset;
     float dx = xn - m_vertices[vi + 0];
 
-    m_uv[ti + 0] = p->m_position - dx;
-    m_uv[ti + 1] = v;
+    float u = p->m_position - dx;
 
+    m_uv[ti+0] = u * brdr->uScale() + brdr->uOffset();
+    m_uv[ti+1] = v * brdr->vScale() + brdr->vOffset();
 }
 
-void MeshCash::setBorderUV(int idx, Point *p, float uOffset, float vOffset, Border *brdr)
+void MeshCash::setBorderSegmentMidVertex(int idx, int p2_idx, int p3_idx, float v, Border *brdr)
 {
-    idx *= 2;
-    m_uv[idx + 0] = p->m_position + p->m_miterX +uOffset; //(p->m_position + p->m_miterX * (uOffset) / p->m_dotPr) * brdr->uScale() + brdr->uOffset();
-    m_uv[idx + 1] = vOffset;//(p->m_miterY * (vOffset) / p->m_dotPr) * brdr->vScale() + brdr->vOffset();
+    int vi = idx *3;
 
-    Log()<<__FUNCTION__"idx: "<<(idx / 2)<<" u: "<<m_uv[idx]<<" v: "<<m_uv[idx+1]<<" pos: "<<p->m_position;
+    int p2i = p2_idx * 3;
+    int p3i = p3_idx * 3;
+
+    m_vertices[vi + 0] = (m_vertices[p2i] - m_vertices[p3i]) / 2.0f + m_vertices[p3i];
+    m_vertices[vi + 1] = (m_vertices[p2i+1] - m_vertices[p3i+1]) / 2.0f + m_vertices[p3i+1];
+    m_vertices[vi + 2] = m_vertices[p3i + 2];
+
+    int ti = idx*2;
+
+    p2_idx *= 2;
+    p3_idx *= 2;
+
+    float u = (m_uv[p3_idx] - m_uv[p2_idx]) / 2.0f + m_uv[p2_idx];
+
+    m_uv[ti+0] = u;
+    m_uv[ti+1] = v * brdr->vScale() + brdr->vOffset();
 }
 
 void MeshCash::setBorderSegmentTriangle(int idxA, int idxB, int idxC, int smi)

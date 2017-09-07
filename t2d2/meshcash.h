@@ -96,9 +96,9 @@ protected:
 
     void setContourBorderData(Contour *cntr, int mask, Border *brdr);
 
-    void setBorderVertex(int idx, t2d2::Point *p, float z, float offset, float v);
+    void setBorderVertex(int idx, t2d2::Point *p, float z, float offset, float v, Border *brdr);
 
-    void setBorderUV(int idx, t2d2::Point *p, float uOffset, float vOffset, Border *brdr);
+    void setBorderSegmentMidVertex(int idx, int p2_idx, int p3_idx, float v, Border *brdr);
 
     void setBorderSegmentTriangle(int idxA, int idxB, int idxC, int smi);
 };
