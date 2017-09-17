@@ -54,6 +54,8 @@ extern "C" T2D2_EXPORT void     t2d2_polygonGroupGetColliderCOM  (T2d2Hndl pg, f
 
 extern "C" T2D2_EXPORT float     t2d2_polygonGroupGetColliderComX  (T2d2Hndl pg);
 extern "C" T2D2_EXPORT float     t2d2_polygonGroupGetColliderComY  (T2d2Hndl pg);
+extern "C" T2D2_EXPORT int       t2d2_polygonGroupGetColliderPathNum (T2d2Hndl pg);
+extern "C" T2D2_EXPORT bool      t2d2_polygonGroupClip (T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx);
 
 
 // polygon func
@@ -163,6 +165,8 @@ extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVOffset (T2d2Hndl b, uns
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetUVScale  (T2d2Hndl b, unsigned int index, float* scale);
 extern "C" T2D2_EXPORT  int             t2d2_bordersGetSubMeshIndex (T2d2Hndl b, unsigned int index);
 extern "C" T2D2_EXPORT  void            t2d2_bordersSetSubMeshIndex (T2d2Hndl b, unsigned int index, int smi);
+extern "C" T2D2_EXPORT  int             t2d2_bordersGetTriOrder (T2d2Hndl b, unsigned int index);
+extern "C" T2D2_EXPORT  void            t2d2_bordersSetTriOrder (T2d2Hndl b, unsigned int index, int to);
 
 // mesh cash func
 

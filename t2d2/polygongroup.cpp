@@ -8,6 +8,7 @@ PolygonGroup::PolygonGroup() :
     m_borders = new Borders();
     m_colliderArea = 0;
     m_colliderComX = m_colliderComY = 0;
+    m_colliderPathNum = 0;
 }
 
 PolygonGroup::~PolygonGroup()
@@ -56,9 +57,12 @@ void PolygonGroup::updateColliderGeometricValues()
 
     m_colliderComX = m_colliderComY = 0;
     m_colliderArea = 0;
+    m_colliderPathNum = 0;
 
     while (poly != nullptr) {
+
         if (poly->genCollider()) {
+
             poly->updateCOM();
 
             float a = poly->getArea();
@@ -70,10 +74,15 @@ void PolygonGroup::updateColliderGeometricValues()
 
             m_colliderComX += x * a;
             m_colliderComY += y * a;
+
+            m_colliderPathNum++;
         }
 
-        poly->next();
+        poly = poly->next();
     }
+
+    if (m_colliderPathNum == 0)
+        return;
 
     if (m_colliderArea == 0) {
         m_colliderComX = m_colliderComY = 0;
@@ -123,6 +132,28 @@ PolygonGroup *PolygonGroup::loadFromFile(std::ifstream &fs)
     return pg;
 }
 
+bool PolygonGroup::clipBy(PolygonGroup *clipperPg, float *trMtx)
+{
+    Polygon *clipperPoly = clipperPg->polygon();
+
+    while (clipperPoly != nullptr) {
+
+        if (clipperPoly->clippingClip()) {
+            Polygon *cp = clipperPoly;
+
+            if (trMtx != nullptr) {
+                //TODO: make a transformed copy of the clipperPoly
+            }
+
+            clipBy(cp);
+        }
+
+
+        clipperPoly = clipperPoly->next();
+    }
+    return false;
+}
+
 void PolygonGroup::deletePolygons()
 {
     while (m_polygon != nullptr) {
@@ -130,4 +161,26 @@ void PolygonGroup::deletePolygons()
         delete m_polygon;
         m_polygon = n;
     }
+}
+
+bool PolygonGroup::clipBy(Polygon *clipperPoly)
+{
+    std::vector<t2d2::Polygon*> prevPolyVec;
+    std::vector<t2d2::Polygon*> newPolyVec;
+
+
+    Polygon *poly = m_polygon;
+
+    while (poly != nullptr) {
+        if (!poly->clippingSubj()) {
+            poly = poly->next();
+            continue;
+        }
+
+        bool res = poly->clipBy(clipperPoly, newPolyVec);
+
+        poly = poly->next();
+    }
+
+    return false;
 }

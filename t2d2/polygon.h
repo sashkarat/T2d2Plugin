@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include "t2d2.h"
+#include "../clipperlib_f/clipper.hpp"
 #include "../poly2tri_f/common/shapes.h"
 
 namespace t2d2 {
@@ -19,6 +20,8 @@ class UvProjection;
 typedef t2d2::Point*                    PointPtr;
 typedef t2d2::Contour*                  ContourPtr;
 typedef std::vector<t2d2::ContourPtr>   ContourPtrVec;
+
+#define POLY_FLAGS_SIZE 5
 
 class Polygon
 {
@@ -129,6 +132,9 @@ public:
 
     inline void setPivot(float x, float y) {m_pivotX = x; m_pivotY = y;}
 
+    void setFlags(bool *flags);
+    void getFlags(bool *flags);
+
     static void saveToFile(Polygon *poly, std::ofstream &fs);
     static void loadFromFile(Polygon *poly, std::ifstream &fs);
 
@@ -144,6 +150,11 @@ protected:
 
     void updateFirst();
 
+    bool clipBy(Polygon* clipperPoly, std::vector<t2d2::Polygon*> &outPolyVec);
+
+
+    static void addPolyToClipper(ClipperLib::Clipper &clipper, Polygon*poly, ClipperLib::PolyType pt);
+    static void buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, t2d2::Polygon *basePoly, std::vector<t2d2::Polygon*> &outVec);
 };
 
 }

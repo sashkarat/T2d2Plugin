@@ -8,13 +8,17 @@ t2d2::Border::Border() :
     m_vOffset(0),
     m_uScale(1),
     m_vScale(1),
-    m_subMeshIndex(0)
+    m_subMeshIndex(0),
+    m_triOrder(1)
 {
 }
 
+
+#define FDATA_SIZE  9
+
 void t2d2::Border::saveToFile(t2d2::Border *b, std::ofstream &fs)
 {
-    static float fdata[8];
+    static float fdata[FDATA_SIZE];
 
     fdata[0] = b->m_offset;
     fdata[1] = b->m_width;
@@ -24,15 +28,16 @@ void t2d2::Border::saveToFile(t2d2::Border *b, std::ofstream &fs)
     fdata[5] = b->m_uScale;
     fdata[6] = b->m_vScale;
     fdata[7] = static_cast<float>(b->m_subMeshIndex);
+    fdata[8] = static_cast<float>(b->m_triOrder);
 
-    fs.write((char*)fdata, sizeof(float) * 8);
+    fs.write((char*)fdata, sizeof(float) * FDATA_SIZE);
 }
 
 void t2d2::Border::loadFromFile(t2d2::Border *b, std::ifstream &fs)
 {
-    static float fdata[8];
+    static float fdata[FDATA_SIZE];
 
-    fs.read((char*)fdata, sizeof(float)*8);
+    fs.read((char*)fdata, sizeof(float)*FDATA_SIZE);
 
     b->m_offset = fdata[0];
     b->m_width = fdata[1];
@@ -42,6 +47,10 @@ void t2d2::Border::loadFromFile(t2d2::Border *b, std::ifstream &fs)
     b->m_uScale = fdata[5];
     b->m_vScale = fdata[6];
     b->m_subMeshIndex = static_cast<int>(fdata[7]);
+    b->m_triOrder = static_cast<int>(fdata[8]);
+
+    if (b->m_triOrder < 1)
+        b->m_triOrder = 1;
 }
 
 void t2d2::Borders::saveToFile(t2d2::Borders *bs, std::ofstream &fs)

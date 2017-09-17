@@ -47,6 +47,38 @@ BBox *Contour::bbox() const
     return m_bbox;
 }
 
+void Contour::makeClipperLibPath(ClipperLib::Path &path)
+{
+    int pc = m_data.size();
+    for(int i = 0; i < pc; i++) {
+        p2t::Point *p = m_data[i];
+        path.push_back( ClipperLib::IntPoint(
+                            p->x * 10000.0f,
+                            p->y * 10000.0f));
+    }
+}
+
+void Contour::setClipperLibPath(ClipperLib::Path &path)
+{
+    int pc = path.size();
+
+    for(unsigned int j = 0; j< m_data.size(); j++)
+        delete m_data[j];
+    m_data.clear();
+
+    for(int i = 0; i < pc; i++) {
+
+        ClipperLib::IntPoint ip = path[i];
+
+        t2d2::Point *p = new t2d2::Point(
+                    ip.X * 0.0001f,
+                    ip.Y * 0.0001f,
+                    this);
+        m_data.push_back(p);
+    }
+
+}
+
 void Contour::saveToFile(Contour *c, std::ofstream &fs)
 {
     int s = static_cast<int>(c->m_data.size());
@@ -296,7 +328,7 @@ unsigned int Contour::addValue(float *in, unsigned int length, unsigned int stri
 
     }
 
-    Log()<<__FUNCTION__<<"data size: "<<m_data.size();
+//    Log()<<__FUNCTION__<<"data size: "<<m_data.size();
 
     return length;
 }
@@ -359,6 +391,8 @@ float Contour::updateArea()
 
     m_area /= 2;
 
+    m_area = t2d2::util::fastabs(m_area);
+
     return m_area;
 }
 
@@ -411,7 +445,7 @@ void Contour::getCOM(float *x, float *y)
 
 void Contour::setBorderFlags(int startIndex, int *flags, int length)
 {
-    Log()<<__FUNCTION__<<" startIndex: "<<startIndex<<" length: "<<length<<" data size: "<<m_data.size();
+//    Log()<<__FUNCTION__<<" startIndex: "<<startIndex<<" length: "<<length<<" data size: "<<m_data.size();
     if ((startIndex + length) > m_data.size()) {
         length = static_cast<int>(m_data.size()) - startIndex;
         if (length < 0)
@@ -433,9 +467,9 @@ void Contour::updatePointPositions()
     float prevP = p->m_position;
 
 
-    unsigned int c = m_data.size();
+    size_t c = m_data.size();
 
-    for(unsigned int i = 1; i < c; i++) {
+    for(size_t i = 1; i < c; i++) {
         p = dynamic_cast<t2d2::Point*>(m_data[i]);
         float dx = p->x - prevX;
         float dy = p->y - prevY;
@@ -445,7 +479,7 @@ void Contour::updatePointPositions()
         p->m_position = sqrtf(dx * dx + dy * dy) + prevP;
 
         prevP = p->m_position;
-        Log()<<__FUNCTION__<<"i: "<<i<<" position: "<<p->m_position;
+//        Log()<<__FUNCTION__<<"i: "<<i<<" position: "<<p->m_position;
     }
 
 }

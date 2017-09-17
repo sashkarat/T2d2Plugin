@@ -19,6 +19,8 @@ class Border
 
     int m_subMeshIndex;
 
+    int m_triOrder;
+
 public:
 
     Border();
@@ -54,6 +56,10 @@ public:
     inline int subMeshIndex() { return m_subMeshIndex; }
 
     inline void setSubMeshIndex(int smi) { m_subMeshIndex = smi; }
+
+    inline void setTriOrder(int to) {m_triOrder = (to >= 1)?to:1;}
+
+    inline int triOrder() const { return m_triOrder; }
 
     static void saveToFile(Border *b, std::ofstream &fs);
 

@@ -1,10 +1,17 @@
 #include "polygon.h"
 
-
 using namespace t2d2;
 
 void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
 {
+
+    static bool flags[POLY_FLAGS_SIZE];
+
+    poly->getFlags(flags);
+
+    fs.write((char *)flags, sizeof(bool) * POLY_FLAGS_SIZE);
+
+
     Contour::saveToFile(poly->m_outline, fs);
 
     unsigned int s = static_cast<unsigned int>(poly->m_holes.size());
@@ -17,6 +24,12 @@ void Polygon::saveToFile(Polygon *poly, std::ofstream &fs)
 
 void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
 {
+    static bool flags[POLY_FLAGS_SIZE];
+
+    fs.read((char *)flags, sizeof(bool) * POLY_FLAGS_SIZE);
+
+    poly->setFlags(flags);
+
     Contour::loadFromFile(poly->m_outline, fs);
     poly->updateIndexator(10);
 
@@ -304,6 +317,24 @@ bool Polygon::isValid() const
     return m_outline->isValid();
 }
 
+void Polygon::setFlags(bool *flags)
+{
+    m_genMesh = flags[0];
+    m_genBorders = flags[1];
+    m_genCollider = flags[2];
+    m_clippingSubj = flags[3];
+    m_clippingClip = flags[4];
+}
+
+void Polygon::getFlags(bool *flags)
+{
+    flags[0] = m_genMesh;
+    flags[1] = m_genBorders;
+    flags[2] = m_genCollider;
+    flags[3] = m_clippingSubj;
+    flags[4] = m_clippingClip;
+}
+
 void Polygon::insertNext(Polygon *p)
 {
         p->m_prev = this;
@@ -355,6 +386,69 @@ void Polygon::updateFirst()
     while(p!= nullptr) {
         p->m_first = p->m_prev->m_first;
         p = p->m_next;
+    }
+}
+
+bool Polygon::clipBy(Polygon *clipperPoly, std::vector<Polygon *> &outPolyVec)
+{
+    static ClipperLib::ClipType ct = ClipperLib::ctDifference;
+
+    ClipperLib::Clipper clipper;
+
+    addPolyToClipper(clipper, this, ClipperLib::ptSubject);
+    addPolyToClipper(clipper, clipperPoly, ClipperLib::ptClip);
+
+    ClipperLib::PolyTree ptree;
+
+    bool res = clipper.Execute(ct, ptree);
+
+    if (!res)
+        return false;
+
+    //build new poly by result tree
+
+    return res;
+}
+
+void Polygon::addPolyToClipper(ClipperLib::Clipper &clipper, Polygon *poly, ClipperLib::PolyType pt)
+{
+    ClipperLib::Path clOutine;
+    poly->m_outline->makeClipperLibPath(clOutine);
+    clipper.AddPath(clOutine, pt, true);
+
+    int hc = poly->m_holes.size();
+    for(int i = 0; i < hc; i++) {
+        Contour *hole = poly->m_holes[i];
+        ClipperLib::Path clHole;
+        hole->makeClipperLibPath(clHole);
+        clipper.AddPath(clHole, pt, true);
+    }
+}
+
+void Polygon::buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, Polygon *basePoly, std::vector<Polygon *> &outVec)
+{
+    ClipperLib::PolyNode *pnd = tree.GetFirst();
+
+    while (pnd != nullptr) {
+        if (pnd->IsHole()) {
+            pnd = pnd->GetNext();
+            continue;
+        }
+
+        t2d2::Polygon *poly = new Polygon(nullptr);
+        poly->m_outline->setClipperLibPath(pnd->Contour);
+
+        int cc = pnd->ChildCount();
+        ClipperLib::PolyNodes &children = pnd->Childs;
+        for(int i = 0; i < cc; i++) {
+            ClipperLib::PolyNode *cpnd = children[i];
+            if (!cpnd->IsHole())
+                continue;
+            Contour *hole = poly->addHole();
+            hole->setClipperLibPath(cpnd->Contour);
+        }
+
+        outVec.push_back(poly);
     }
 }
 

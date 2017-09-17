@@ -6,6 +6,7 @@
 
 #include "t2d2.h"
 #include "../poly2tri_f/poly2tri.h"
+#include "../clipperlib_f/clipper.hpp"
 
 
 
@@ -120,6 +121,9 @@ public:
 
     p2t::Point * operator[] (int index);
     BBox *bbox() const;
+
+    void makeClipperLibPath(ClipperLib::Path &path);
+    void setClipperLibPath(ClipperLib::Path &path);
 
 
     static void saveToFile(Contour *c, std::ofstream &fs);

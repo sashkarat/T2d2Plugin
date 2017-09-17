@@ -144,6 +144,16 @@ float t2d2_polygonGroupGetColliderComY(T2d2Hndl pg)
     return _CAST_2POLY_G(pg)->getColliderComY();
 }
 
+int t2d2_polygonGroupGetColliderPathNum(T2d2Hndl pg)
+{
+    return _CAST_2POLY_G(pg)->getColliderPathNum();
+}
+
+bool t2d2_polygonGroupClip(T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx)
+{
+    return _CAST_2POLY_G(pg)->clipBy( _CAST_2POLY_G(clipperPg), trMtx);
+}
+
 
 //===============================================================
 
@@ -298,25 +308,12 @@ void t2d2_polygonGetPivot(T2d2Hndl poly, float *out)
 
 void t2d2_polygonGetFlags(T2d2Hndl poly, bool *flags)
 {
-    t2d2::Polygon *p = _CAST_2POLY(poly);
-    flags[0] = p->genMesh();
-    flags[1] = p->genBorders();
-    flags[2] = p->genCollider();
-    flags[3] = p->clippingSubj();
-    flags[4] = p->clippingClip();
+    _CAST_2POLY(poly)->getFlags(flags);
 }
 
 void t2d2_polygonSetFlags(T2d2Hndl poly, bool *flags)
 {
-    t2d2::Polygon *p = _CAST_2POLY(poly);
-    p->setGenMesh       (flags[0]);
-    p->setGenBorders    (flags[1]);
-    p->setGenCollider   (flags[2]);
-    p->setClippingSubj  (flags[3]);
-    p->setClippingClip  (flags[4]);
-
-//    t2d2::Log()<<__FUNCTION__<<"genM="<<p->genMesh()<<"genColl="<<p->genCollider()<<"clSbj="<<p->clippingSubj()<<"clClp="<<p->clippingClip();
-
+    _CAST_2POLY(poly)->setFlags(flags);
 }
 
 unsigned int t2d2_contourGetLength(T2d2Hndl cntr)
@@ -506,6 +503,15 @@ void t2d2_bordersSetSubMeshIndex(T2d2Hndl b, unsigned int index, int smi)
     _CAST_2BORDERS(b)->border(index)->setSubMeshIndex(smi);
 }
 
+int t2d2_bordersGetTriOrder(T2d2Hndl b, unsigned int index)
+{
+    return _CAST_2BORDERS(b)->border(index)->triOrder();
+}
+
+void t2d2_bordersSetTriOrder(T2d2Hndl b, unsigned int index, int to)
+{
+    _CAST_2BORDERS(b)->border(index)->setTriOrder(to);
+}
 
 bool t2d2_mcashIsValid(T2d2Hndl mcash)
 {
@@ -591,6 +597,9 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
+
+
 
 
 
