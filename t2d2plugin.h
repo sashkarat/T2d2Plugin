@@ -60,7 +60,6 @@ extern "C" T2D2_EXPORT bool      t2d2_polygonGroupClip (T2d2Hndl pg, T2d2Hndl cl
 
 // polygon func
 
-extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetFirst            (T2d2Hndl poly);
 extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetNext             (T2d2Hndl poly);
 extern "C" T2D2_EXPORT T2d2Hndl     t2d2_polygonGetPrev             (T2d2Hndl poly);
 

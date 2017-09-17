@@ -81,7 +81,7 @@ void Polygon::updateCOM()
     m_comY /= a;
 }
 
-Polygon::Polygon(PolygonGroup *pg) : m_first(this), m_prev(nullptr), m_next(nullptr)
+Polygon::Polygon(PolygonGroup *pg) : m_prev(nullptr), m_next(nullptr)
 {
 
     m_triangles = nullptr;
@@ -129,11 +129,6 @@ Polygon *Polygon::prev()
 Polygon *Polygon::next()
 {
     return m_next;
-}
-
-Polygon *Polygon::first()
-{
-    return m_first;
 }
 
 Polygon *Polygon::findLast()
@@ -342,20 +337,14 @@ void Polygon::insertNext(Polygon *p)
         if (m_next != nullptr)
             m_next->m_prev = p;
         m_next = p;
-        p->m_first = m_first;
-        p->updateFirst();
 }
 
 void Polygon::insertPrev(Polygon *p)
 {
     p->m_next = this;
     p->m_prev = m_prev;
-    if (m_prev == nullptr) {
-        m_first = p->m_first;
-        updateFirst();
-    } else {
+    if (m_prev != nullptr)
         m_prev->m_next = p;
-    }
     m_prev = p;
 }
 
@@ -367,26 +356,11 @@ void Polygon::exclude(Polygon *p)
     if (pp!= nullptr)
         pp->m_next = pn;
 
-    if (pn!= nullptr) {
+    if (pn!= nullptr)
         pn->m_prev = pp;
-        if (pn->m_first == p) {
-            pn->m_first = pn;
-            pn->updateFirst();
-        }
-    }
 
     p->m_prev = nullptr;
     p->m_next = nullptr;
-    p->m_first = p;
-}
-
-void Polygon::updateFirst()
-{
-    Polygon *p = m_next;
-    while(p!= nullptr) {
-        p->m_first = p->m_prev->m_first;
-        p = p->m_next;
-    }
 }
 
 bool Polygon::clipBy(Polygon *clipperPoly, std::vector<Polygon *> &outPolyVec)
@@ -402,10 +376,12 @@ bool Polygon::clipBy(Polygon *clipperPoly, std::vector<Polygon *> &outPolyVec)
 
     bool res = clipper.Execute(ct, ptree);
 
+    Log()<<__FUNCTION__<<"clipper execute res: "<<res;
+
     if (!res)
         return false;
 
-    //build new poly by result tree
+    buildPolyVecFromClipperTree(ptree, this, outPolyVec);
 
     return res;
 }
@@ -449,6 +425,8 @@ void Polygon::buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, Polygon *b
         }
 
         outVec.push_back(poly);
+
+        pnd = pnd->GetNext();
     }
 }
 

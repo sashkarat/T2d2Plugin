@@ -23,10 +23,36 @@ Polygon *PolygonGroup::addPolygon()
         m_polygon = new Polygon(this);
         return m_polygon;
     } else {
-        Polygon *p = m_polygon->findLast();
         Polygon *np = new Polygon(this);
-        p->insertNext(np);
+        m_polygon->findLast()->insertNext(np);
         return np;
+    }
+}
+
+Polygon *PolygonGroup::addPolygon(Polygon *poly)
+{
+    if (m_polygon == nullptr) {
+        m_polygon = poly;
+        poly->m_prev = nullptr;
+    } else {
+       m_polygon->findLast()->insertNext(poly);
+    }
+    poly->m_polyGroup = this;
+    return poly;
+}
+
+void PolygonGroup::addPolygons(std::vector<Polygon *> &polyVec)
+{
+    int c = polyVec.size();
+    if (c == 0)
+        return;
+    Polygon* poly = addPolygon(polyVec[0]);
+    for(int i = 1; i < c; i++) {
+        Polygon *np = polyVec[i];
+        poly->insertNext(np);
+        poly->m_polyGroup = this;
+        np->m_next = nullptr;
+        poly = np;
     }
 }
 
@@ -165,11 +191,13 @@ void PolygonGroup::deletePolygons()
 
 bool PolygonGroup::clipBy(Polygon *clipperPoly)
 {
-    std::vector<t2d2::Polygon*> prevPolyVec;
+    std::vector<t2d2::Polygon*> oldPolyVec;
     std::vector<t2d2::Polygon*> newPolyVec;
 
 
     Polygon *poly = m_polygon;
+
+    bool accRes = false;
 
     while (poly != nullptr) {
         if (!poly->clippingSubj()) {
@@ -179,8 +207,23 @@ bool PolygonGroup::clipBy(Polygon *clipperPoly)
 
         bool res = poly->clipBy(clipperPoly, newPolyVec);
 
+        if (res)
+            oldPolyVec.push_back(poly);
+
+        accRes = accRes || res;
+
         poly = poly->next();
     }
 
-    return false;
+    int c = oldPolyVec.size();
+
+    for(int i = 0; i < c; i++) {
+        Polygon *poly = oldPolyVec[i];
+        deletePolygon(poly);
+    }
+
+    addPolygons(newPolyVec);
+
+
+    return accRes;
 }

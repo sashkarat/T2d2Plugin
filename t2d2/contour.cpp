@@ -49,8 +49,8 @@ BBox *Contour::bbox() const
 
 void Contour::makeClipperLibPath(ClipperLib::Path &path)
 {
-    int pc = m_data.size();
-    for(int i = 0; i < pc; i++) {
+    size_t pc = m_data.size();
+    for(size_t i = 0; i < pc; i++) {
         p2t::Point *p = m_data[i];
         path.push_back( ClipperLib::IntPoint(
                             p->x * 10000.0f,
@@ -60,9 +60,9 @@ void Contour::makeClipperLibPath(ClipperLib::Path &path)
 
 void Contour::setClipperLibPath(ClipperLib::Path &path)
 {
-    int pc = path.size();
-
-    for(unsigned int j = 0; j< m_data.size(); j++)
+    size_t pc = path.size();
+    size_t ds = m_data.size();
+    for(size_t j = 0; j < ds; j++)
         delete m_data[j];
     m_data.clear();
 
@@ -223,20 +223,22 @@ unsigned int Contour::getValue(unsigned int startIndex, unsigned int length, flo
         Log(ltWarning)<<__FUNCTION__<<"index out of range";
         return 0;
     }
-    unsigned int l = 0;
-    for(unsigned int i= startIndex; l < length && i < m_data.size(); i++) {
+    size_t l = 0;
+    size_t ds = m_data.size();
+    bool fillZ = fillByZValue && (stride >= 3);
+
+    for(size_t i = startIndex; l < length && i < ds; i++) {
         t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[i]);
         out[0] = p->x;
         out[1] = p->y;
 
-        if (fillByZValue && stride >= 3) {
+        if (fillZ)
             out[2] = m_poly->zValue();
-        }
 
         out += stride;
         l++;
     }
-    return l;
+    return static_cast<unsigned int>(l);
 }
 
 unsigned int Contour::getValue2d(unsigned int startIndex, unsigned int length, float *out)

@@ -80,6 +80,8 @@ public :
 
     Polygon*    polygon() {return m_polygon;}
     Polygon*    addPolygon();
+    Polygon*    addPolygon(t2d2::Polygon *poly);
+    void addPolygons(std::vector<t2d2::Polygon *> &polyVec);
     void        deletePolygon(Polygon *p);
     Borders*    borders() {return m_borders;}
 

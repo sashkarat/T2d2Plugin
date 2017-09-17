@@ -157,11 +157,6 @@ bool t2d2_polygonGroupClip(T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx)
 
 //===============================================================
 
-T2d2Hndl t2d2_polygonGetFirst(T2d2Hndl poly)
-{
-    return _CAST_2POLY(poly)->first();
-}
-
 T2d2Hndl t2d2_polygonGetNext(T2d2Hndl poly)
 {
     return _CAST_2POLY(poly)->next();

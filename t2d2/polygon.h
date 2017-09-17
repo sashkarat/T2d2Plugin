@@ -62,7 +62,6 @@ protected:
     bool                m_clippingSubj;
     bool                m_clippingClip;
 
-    Polygon *m_first;
     Polygon *m_prev;
     Polygon *m_next;
 
@@ -73,7 +72,6 @@ public:
 
     Polygon *prev();
     Polygon *next();
-    Polygon *first();
     Polygon *findLast();
 
     Contour *outline();
