@@ -31,10 +31,8 @@ void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
     poly->setFlags(flags);
 
     Contour::loadFromFile(poly->m_outline, fs);
-    poly->updateIndexator(10);
 
     int hc  = 0;
-
 
     fs.read((char*)&hc, sizeof(int));
 
@@ -43,6 +41,8 @@ void Polygon::loadFromFile(Polygon *poly, std::ifstream &fs)
         Contour::loadFromFile(hole, fs);
         poly->m_holes.push_back(hole);
     }
+
+    poly->updateIndexator(10);
 }
 
 void Polygon::updateArea()
@@ -81,10 +81,30 @@ void Polygon::updateCOM()
     m_comY /= a;
 }
 
-Polygon::Polygon(PolygonGroup *pg) : m_prev(nullptr), m_next(nullptr)
+t2d2::SimpPolyData *Polygon::createSimpPolyData(Polygon *poly, float *trMtx)
 {
+    int hc = poly->holesCount();
 
-    m_triangles = nullptr;
+    t2d2::SimpPolyData *spd = new t2d2::SimpPolyData(hc);
+
+    spd->m_outline.set(poly->m_outline);
+
+    for(int i = 0; i < hc; i++)
+        spd->m_holes[i].set(poly->hole(i));
+
+    if (trMtx != 0)
+        spd->applyTrMatrix(trMtx);
+
+    spd->updateBBox();
+
+    return spd;
+}
+
+Polygon::Polygon(PolygonGroup *pg) : m_prev(0), m_next(0)
+{
+    m_indexator = 0;
+
+    m_triangles = 0;
     m_triangleNum = 0;
 
     m_polyGroup = pg;
@@ -111,6 +131,10 @@ Polygon::Polygon(PolygonGroup *pg) : m_prev(nullptr), m_next(nullptr)
 
 Polygon::~Polygon()
 {
+
+    if (m_indexator)
+        delete m_indexator;
+
     delete m_uvProjection;
 
     deleteTriangles();
@@ -134,7 +158,7 @@ Polygon *Polygon::next()
 Polygon *Polygon::findLast()
 {
     Polygon *p = this;
-    while(p->m_next != nullptr)
+    while(p->m_next != 0)
         p = p->m_next;
     return  p;
 }
@@ -153,7 +177,7 @@ Contour *Polygon::hole(unsigned int index)
 {
     if (index >= m_holes.size()) {
         Log(ltWarning)<<__FUNCTION__<<"index is out of range";
-        return nullptr;
+        return 0;
     }
     return m_holes[index];
 }
@@ -206,6 +230,17 @@ bool Polygon::validate(bool withHoles)
     return res;
 }
 
+void Polygon::markValid()
+{
+    m_outline->m_valid = true;
+
+    size_t hs = m_holes.size();
+
+    for(size_t i = 0; i < hs; i++) {
+        m_holes[i]->m_valid = true;
+    }
+}
+
 void Polygon::triangulate()
 {
     deleteTriangles();
@@ -217,7 +252,9 @@ void Polygon::triangulate()
 
     p2t::CDT *p2tCdt = new p2t::CDT(m_outline->m_data);
 
-    for(int i = 0; i < m_holes.size(); i++) {
+    size_t hs = m_holes.size();
+
+    for(size_t i = 0; i < hs; i++) {
         Contour *holePtr = m_holes[i];
 
         if (!holePtr->m_valid)
@@ -247,6 +284,8 @@ void Polygon::triangulate()
         PointPtr p1 = dynamic_cast<t2d2::Point*>(st->GetPoint(1));
         PointPtr p2 = dynamic_cast<t2d2::Point*>(st->GetPoint(2));
 
+
+
 //        p0->edge_list.resize(0);
 //        p1->edge_list.resize(0);
 //        p2->edge_list.resize(0);
@@ -265,7 +304,7 @@ void Polygon::deleteTriangles()
 {
     if (m_triangles)
         delete [] m_triangles;
-    m_triangles = nullptr;
+    m_triangles = 0;
     m_triangleNum = 0;
 }
 
@@ -276,9 +315,9 @@ void Polygon::updateBBox()
 
 void Polygon::updateIndexator(int gridSize)
 {
-    m_outline->updateIndexator(gridSize);
-    for(int i = 0; i < m_holes.size(); i++)
-        m_holes[i]->updateIndexator(gridSize);
+    if (m_indexator)
+        delete m_indexator;
+    m_indexator = new GridIndexator(this, gridSize);
 }
 
 void Polygon::updateBorderGeometry()
@@ -291,20 +330,6 @@ void Polygon::updateBorderGeometry()
 BBox *Polygon::bbox()
 {
     return m_outline->m_bbox;
-}
-
-t2d2::Point *Polygon::findPoint(float x, float y)
-{
-    t2d2::Point *p = m_outline->indexator()->getPoint(x, y);
-    if (p!= nullptr)
-        return p;
-    for(int i = 0; i < m_holes.size(); i++) {
-        p = m_holes[i]->indexator()->getPoint(x, y);
-        if (p != nullptr)
-            return p;
-    }
-
-    return nullptr;
 }
 
 bool Polygon::isValid() const
@@ -334,7 +359,7 @@ void Polygon::insertNext(Polygon *p)
 {
         p->m_prev = this;
         p->m_next = m_next;
-        if (m_next != nullptr)
+        if (m_next != 0)
             m_next->m_prev = p;
         m_next = p;
 }
@@ -343,7 +368,7 @@ void Polygon::insertPrev(Polygon *p)
 {
     p->m_next = this;
     p->m_prev = m_prev;
-    if (m_prev != nullptr)
+    if (m_prev != 0)
         m_prev->m_next = p;
     m_prev = p;
 }
@@ -353,30 +378,42 @@ void Polygon::exclude(Polygon *p)
     Polygon *pp = p->m_prev;
     Polygon *pn = p->m_next;
 
-    if (pp!= nullptr)
+    if (pp!= 0)
         pp->m_next = pn;
 
-    if (pn!= nullptr)
+    if (pn!= 0)
         pn->m_prev = pp;
 
-    p->m_prev = nullptr;
-    p->m_next = nullptr;
+    p->m_prev = 0;
+    p->m_next = 0;
 }
 
-bool Polygon::clipBy(Polygon *clipperPoly, std::vector<Polygon *> &outPolyVec)
+bool Polygon::clipBy(t2d2::SimpPolyData *spd, std::vector<Polygon *> &outPolyVec)
 {
+    BBox *b = bbox();
+    if (!b->isOk())
+        updateBBox();
+
+    BBox *b2 = spd->m_bbox;
+
+//    Log()<<__FUNCTION__<<"spd bbox: X[ "<<b2->xmin<<":"<<b2->xmax<<"] Y ["<<b2->ymin<<":"<<b2->ymax<<"]";
+//    Log()<<__FUNCTION__<<"poly bbox: X[ "<<b->xmin<<":"<<b->xmax<<"] Y[ "<<b->ymin<<":"<<b->ymax<<"] ";
+
+    bool res = BBox::overlap(b, b2);
+
+    if (!res)
+        return false;
+
     static ClipperLib::ClipType ct = ClipperLib::ctDifference;
 
     ClipperLib::Clipper clipper;
 
-    addPolyToClipper(clipper, this, ClipperLib::ptSubject);
-    addPolyToClipper(clipper, clipperPoly, ClipperLib::ptClip);
+    addSubjToClipper(clipper, this);
+    addClipToClipper(clipper, spd);
 
     ClipperLib::PolyTree ptree;
 
-    bool res = clipper.Execute(ct, ptree);
-
-    Log()<<__FUNCTION__<<"clipper execute res: "<<res;
+    res = clipper.Execute(ct, ptree);
 
     if (!res)
         return false;
@@ -386,42 +423,77 @@ bool Polygon::clipBy(Polygon *clipperPoly, std::vector<Polygon *> &outPolyVec)
     return res;
 }
 
-void Polygon::addPolyToClipper(ClipperLib::Clipper &clipper, Polygon *poly, ClipperLib::PolyType pt)
+void Polygon::addSubjToClipper(ClipperLib::Clipper &clipper, Polygon *poly)
 {
     ClipperLib::Path clOutine;
     poly->m_outline->makeClipperLibPath(clOutine);
-    clipper.AddPath(clOutine, pt, true);
+    clipper.AddPath(clOutine, ClipperLib::ptSubject, true);
 
-    int hc = poly->m_holes.size();
-    for(int i = 0; i < hc; i++) {
+    size_t hc = poly->m_holes.size();
+    for(size_t i = 0; i < hc; i++) {
         Contour *hole = poly->m_holes[i];
         ClipperLib::Path clHole;
         hole->makeClipperLibPath(clHole);
-        clipper.AddPath(clHole, pt, true);
+        clipper.AddPath(clHole, ClipperLib::ptSubject, true);
     }
+}
+
+void Polygon::addClipToClipper(ClipperLib::Clipper &clipper, t2d2::SimpPolyData *spd)
+{
+//    ClipperLib::Path clOutline;
+//    Contour::makeClipperLibPath(clOutline, spd->m_outline);
+//    clipper.AddPath(clOutline, ClipperLib::ptClip, true);
+
+//    for(int i = 0; i < spd->m_hc; i++) {
+//        ClipperLib::Path clHole;
+//        Contour::makeClipperLibPath(clHole, spd->m_holes[i]);
+//        clipper.AddPath(clHole, ClipperLib::ptClip, true);
+//    }
+
+
+    clipper.AddPath(spd->m_outline.m_clPath, ClipperLib::ptClip, true);
+    for(int i = 0; i < spd->m_hc; i++) {
+        clipper.AddPath(spd->m_holes[i].m_clPath, ClipperLib::ptClip, true);
+    }
+
 }
 
 void Polygon::buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, Polygon *basePoly, std::vector<Polygon *> &outVec)
 {
+
+    if (basePoly->indexator() == 0)
+        basePoly->updateIndexator(10);
+
     ClipperLib::PolyNode *pnd = tree.GetFirst();
 
-    while (pnd != nullptr) {
+    while (pnd != 0) {
         if (pnd->IsHole()) {
             pnd = pnd->GetNext();
             continue;
         }
 
-        t2d2::Polygon *poly = new Polygon(nullptr);
+        t2d2::Polygon *poly = new Polygon(0);
+
+        copyPolyAttributes(poly, basePoly);
+
         poly->m_outline->setClipperLibPath(pnd->Contour);
 
-        int cc = pnd->ChildCount();
+        int lastPrevGenIdx = Contour::restorePointAttributes(poly->m_outline, basePoly->indexator());
+
+//        Contour::rebuildPointAttributes(poly->m_outline, lastPrevGenIdx);
+
         ClipperLib::PolyNodes &children = pnd->Childs;
-        for(int i = 0; i < cc; i++) {
+
+        size_t cc = children.size();
+
+        for(size_t i = 0; i < cc; i++) {
             ClipperLib::PolyNode *cpnd = children[i];
             if (!cpnd->IsHole())
                 continue;
             Contour *hole = poly->addHole();
             hole->setClipperLibPath(cpnd->Contour);
+            lastPrevGenIdx = Contour::restorePointAttributes(hole, basePoly->indexator());
+//            Contour::rebuildPointAttributes(hole, lastPrevGenIdx);
         }
 
         outVec.push_back(poly);
@@ -430,3 +502,16 @@ void Polygon::buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, Polygon *b
     }
 }
 
+void Polygon::copyPolyAttributes(Polygon *dp, Polygon *sp)
+{
+    dp->m_genMesh = sp->m_genMesh;
+    dp->m_genBorders = sp->m_genBorders;
+    dp->m_genCollider = sp->m_genCollider;
+    dp->m_clippingClip = sp->m_clippingClip;
+    dp->m_clippingSubj = sp->m_clippingSubj;
+    dp->m_pivotX = sp->m_pivotX;
+    dp->m_pivotY = sp->m_pivotY;
+    dp->m_zValue = sp->m_zValue;
+    dp->m_subMeshIndex = sp->m_subMeshIndex;
+    UvProjection::copy(dp->m_uvProjection, sp->m_uvProjection);
+}

@@ -17,7 +17,7 @@ class Border
     float m_uScale;
     float m_vScale;
 
-    int m_subMeshIndex;
+    unsigned int m_subMeshIndex;
 
     int m_triOrder;
 
@@ -53,9 +53,9 @@ public:
 
     inline void setVScale(float vScale) { m_vScale = vScale; }
 
-    inline int subMeshIndex() { return m_subMeshIndex; }
+    inline unsigned int subMeshIndex() { return m_subMeshIndex; }
 
-    inline void setSubMeshIndex(int smi) { m_subMeshIndex = smi; }
+    inline void setSubMeshIndex(unsigned int smi) { m_subMeshIndex = smi; }
 
     inline void setTriOrder(int to) {m_triOrder = (to >= 1)?to:1;}
 

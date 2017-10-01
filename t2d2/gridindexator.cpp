@@ -29,17 +29,39 @@ int t2d2::GridIndexator::getIndex(t2d2::Point *p)
     return getIndex(p->x, p->y);
 }
 
-t2d2::GridIndexator::GridIndexator(Contour *contour, int gridSize)
+void t2d2::GridIndexator::pushContour(t2d2::Contour *cntr)
 {
-    m_epsilon = 0.00001f;
+    if (cntr->m_data.size() == 0)
+        return;
+    t2d2::Point *p = dynamic_cast<t2d2::Point*>(cntr->m_data[0]);
+    t2d2::Point *ep = p;
 
-    t2d2::BBox *bbox = contour->bbox();
+    do {
+        int index = getIndex (p);
+        if (index >= 0) {
+            if (m_cells[index] == 0) {
+                m_cells[index] = new Cell();
+                m_cells[index]->m_p = p;
+            } else {
+                m_cells[index]->m_lp->m_enp = p;
+            }
+            m_cells[index]->m_lp = p;
+        }
+        p = p->m_np;
+    } while (p!= ep);
+}
+
+t2d2::GridIndexator::GridIndexator(Polygon *poly, int gridSize)
+{
+    m_epsilon = 0.0001f;
+
+    t2d2::BBox *bbox = poly->bbox();
 
     if (!bbox->isOk())
-        contour->updateBBox();
+        poly->updateBBox();
 
-    float ex = (bbox->xmax - bbox->xmin) / gridSize / 4;
-    float ey = (bbox->ymax - bbox->ymin) / gridSize / 4;
+    float ex = (bbox->xmax - bbox->xmin) / gridSize / 4.0f;
+    float ey = (bbox->ymax - bbox->ymin) / gridSize / 4.0f;
 
     m_xMin = bbox->xmin - ex;
     m_yMin = bbox->ymin - ey;
@@ -68,22 +90,17 @@ t2d2::GridIndexator::GridIndexator(Contour *contour, int gridSize)
 
     memset((void *)m_cells, 0, sizeof(CellPtr) * m_size);
 
-    for(int i = 0; i < contour->m_data.size(); i++) {
-        t2d2::Point * p = dynamic_cast<t2d2::Point*>(contour->m_data[i]);
-        int index = getIndex (p);
-        if (index < 0)
-            continue;
-        if (m_cells[index] == nullptr) {
-            m_cells[index] = new Cell();
-        }
-        m_cells[index]->m_points.push_back(p);
+    pushContour(poly->outline());
+    int hc = poly->holesCount();
+    for(int hi = 0; hi < hc; hi++) {
+        pushContour(poly->hole(hi));
     }
 }
 
 t2d2::GridIndexator::~GridIndexator()
 {
     for(int i = 0; i < m_size; i++)
-        if (m_cells[i] != nullptr)
+        if (m_cells[i] != 0)
             delete m_cells[i];
 
     delete [] m_cells;
@@ -97,15 +114,19 @@ t2d2::Point *t2d2::GridIndexator::getPoint(float x, float y)
 
     Cell * c = m_cells[index];
 
-    for(int i = 0; i < c->m_points.size(); i++) {
+    if (c == 0)
+        return 0;
 
-        t2d2::Point *tp = c->m_points[i];
 
-        if ( t2d2::util::fastabs(x - tp->x) <= m_epsilon &&
-             t2d2::util::fastabs(y - tp->y) <= m_epsilon)
+    t2d2::Point *tp = c->m_p;
+
+    while (tp != nullptr) {
+
+        if (t2d2::util::pointsEqual(x, y, tp->x, tp->y, m_epsilon))
             return tp;
-    }
 
+        tp = tp->m_enp;
+    }
     return nullptr;
 }
 

@@ -4,10 +4,10 @@ using namespace  t2d2;
 
 MeshCash::MeshCash(PolygonGroup *pg) :
     m_vertexNumber(0),
-    m_vertices(nullptr),
-    m_uv(nullptr),
+    m_vertices(0),
+    m_uv(0),
     m_subMeshNumber(0),
-    m_smTriangles(nullptr),
+    m_smTriangles(0),
     m_pg(pg),
     m_valid(false)
 {
@@ -19,14 +19,23 @@ MeshCash::~MeshCash()
     free();
 }
 
-bool MeshCash::build(unsigned int subMeshNumber)
+bool MeshCash::build(unsigned int subMeshNumber, bool doValidation)
 {
     free();
 
     m_subMeshNumber = subMeshNumber;
 
-    if (!validate())
-        return false;
+    if (doValidation) {
+        if (!validate())
+            return false;
+    } else {
+        Polygon *poly = m_pg->polygon();
+        while (poly != 0) {
+            poly->markValid();
+            poly = poly->next();
+        }
+        m_valid = true;
+    }
 
     allocate();
 
@@ -37,7 +46,7 @@ bool MeshCash::build(unsigned int subMeshNumber)
 
 unsigned int MeshCash::triangleNumber(unsigned int smi) const
 {
-    if (m_smTriangles == nullptr) {
+    if (m_smTriangles == 0) {
         Log(ltError)<<__FUNCTION__<<"no triangulation data";
         return 0;
     }
@@ -50,7 +59,7 @@ unsigned int MeshCash::triangleNumber(unsigned int smi) const
 
 void MeshCash::cpyVertices(float *out)
 {
-    if (m_vertices == nullptr) {
+    if (m_vertices == 0) {
         Log(ltError)<<__FUNCTION__<<"no vertices data";
         return;
     }
@@ -59,7 +68,7 @@ void MeshCash::cpyVertices(float *out)
 
 void MeshCash::cpyUv(float *out)
 {
-    if (m_uv == nullptr) {
+    if (m_uv == 0) {
         Log(ltError)<<__FUNCTION__<<"no uv data";
         return;
     }
@@ -69,7 +78,7 @@ void MeshCash::cpyUv(float *out)
 
 void MeshCash::cpyIndices(unsigned int smi, int *out)
 {
-    if (m_smTriangles == nullptr) {
+    if (m_smTriangles == 0) {
         Log(ltError)<<__FUNCTION__<<"no triangulation data";
         return;
     }
@@ -93,10 +102,10 @@ void MeshCash::free()
         delete [] m_smTriangles;
 
     m_vertexNumber = 0;
-    m_vertices = nullptr;
-    m_uv = nullptr;
+    m_vertices = 0;
+    m_uv = 0;
     m_subMeshNumber = 0;
-    m_smTriangles = nullptr;
+    m_smTriangles = 0;
     m_valid = false;
 }
 
@@ -106,7 +115,7 @@ bool MeshCash::validate()
 
     Polygon *poly = m_pg->polygon();
 
-    while(poly != nullptr) {
+    while(poly != 0) {
         if (!check(poly)) {
             poly = poly->next();
             continue;
@@ -126,7 +135,7 @@ void MeshCash::allocate()
     m_smTriangles = new SubMeshTriangles[m_subMeshNumber];
 
     Polygon *poly = m_pg->polygon();
-    while (poly != nullptr) {
+    while (poly != 0) {
         if (!check (poly)) {
             poly = poly->next();
             continue;
@@ -156,7 +165,7 @@ void MeshCash::set()
 {
     Polygon *poly = m_pg->polygon();
 
-    while (poly != nullptr) {
+    while (poly != 0) {
         if (!check (poly)) {
             poly = poly->next();
             continue;
@@ -206,7 +215,7 @@ void MeshCash::allocBorderData()
             continue;
 
         Polygon *poly = m_pg->polygon();
-        while (poly != nullptr) {
+        while (poly != 0) {
 
             allocContourBorderData(poly->outline(), mask, brdr);
 
@@ -224,21 +233,16 @@ void MeshCash::allocContourBorderData(Contour *cntr, int mask, Border *brdr)
 {
     int smi = brdr->subMeshIndex();
 
-    int cm = cntr->length()-1;
-
     bool prevState = false;
 
     int av = brdr->triOrder() * 2 - 1;
 
-    //over the contour loop (not including a last point)
-    for(int i = 0; i < cm; i++) {
-        t2d2::Point *p0 = cntr->getPoint(i);
-        t2d2::Point *p1 = cntr->getPoint(i+1);
+    t2d2::Point *p0 = cntr->getPoint(0);
+    t2d2::Point *ep = p0;
 
+    do {
+        t2d2::Point *p1 = p0->m_np;
         bool state = (p0->m_borderFlags & p1->m_borderFlags & mask) != 0;
-
-
-
         if (state) {
             if (prevState)
                 m_vertexNumber += 2 + av;
@@ -248,25 +252,8 @@ void MeshCash::allocContourBorderData(Contour *cntr, int mask, Border *brdr)
             m_smTriangles[smi].m_triNum += av + 2;
         }
         prevState = state;
-    }
-
-    //at the last point (the last edge) iteration to close the contour
-    {
-        t2d2::Point *p0 = cntr->getPoint(cm);
-        t2d2::Point *p1 = cntr->getPoint(0);
-
-        bool state = (p0->m_borderFlags & p1->m_borderFlags & mask) != 0;
-
-        if (state) {
-            if (prevState)
-                m_vertexNumber += 2 + av;
-            else
-                m_vertexNumber += 4 + av;
-
-            m_smTriangles[smi].m_triNum += av + 2;
-        }
-        prevState = state;
-    }
+        p0 = p1;
+    } while (p0 != ep);
 }
 
 void MeshCash::allocTriangles(Polygon *poly)
@@ -348,9 +335,16 @@ void MeshCash::setTriangles(Polygon *poly)
         t2d2::Point *p1 = t->points[1];
         t2d2::Point *p2 = t->points[0];
 
-        trs.m_tri[idx + 0] = p0->m_index;
-        trs.m_tri[idx + 1] = p1->m_index;
-        trs.m_tri[idx + 2] = p2->m_index;
+
+        if (p0 == nullptr || p1 == nullptr || p2 == nullptr) {
+            trs.m_tri[idx + 0] = 0;
+            trs.m_tri[idx + 1] = 0;
+            trs.m_tri[idx + 2] = 0;
+        } else {
+            trs.m_tri[idx + 0] = p0->m_index;
+            trs.m_tri[idx + 1] = p1->m_index;
+            trs.m_tri[idx + 2] = p2->m_index;
+        }
     }
 
     trs.m_triDone += tn;
@@ -371,7 +365,7 @@ void MeshCash::setBorderData()
             continue;
 
         Polygon *poly = m_pg->polygon();
-        while (poly != nullptr) {
+        while (poly != 0) {
 
             setContourBorderData(poly->outline(), mask, brdr);
 
@@ -387,16 +381,17 @@ void MeshCash::setBorderData()
 
 void MeshCash::setContourBorderData(Contour *cntr, int mask, Border *brdr)
 {
-    int cm = cntr->length()-1;
-
     bool prevState = false;
 
     float zValue = cntr->getPoly()->zValue() + brdr->zOffset();
 
-    //over the contour loop (not including the last point)
-    for(int i = 0; i < cm; i++) {
-        t2d2::Point *p0 = cntr->getPoint(i);
-        t2d2::Point *p1 = cntr->getPoint(i+1);
+
+    t2d2::Point *p0 = cntr->getPoint(0);
+    t2d2::Point *ep = p0->m_pp;
+
+    // main loop: from a first point to last one (not including the last point)
+    do {
+        t2d2::Point *p1 = p0->m_np;
 
         bool state = (p0->m_borderFlags & p1->m_borderFlags & mask) != 0;
 
@@ -404,31 +399,25 @@ void MeshCash::setContourBorderData(Contour *cntr, int mask, Border *brdr)
             setContourBorderSegmentData(p0, p1, prevState, zValue, brdr );
 
         prevState = state;
-    }
 
-    //at the last point (the last edge) iteration to close the contour
+        p0 = p0->m_np;
+    } while (p0 != ep);
+
+    //last point iteration
     {
-        t2d2::Point *p0 = cntr->getPoint(cm);
-        t2d2::Point *p1 = cntr->getPoint(0);
+        t2d2::Point *p1 = p0->m_np;
 
         bool state = (p0->m_borderFlags & p1->m_borderFlags & mask) != 0;
         if (state) {
 
-            float pp =p1->m_position;
+            float pPos =p1->m_position;
 
-            float dx = p1->x - p0->x;
-            float dy = p1->y - p0->y;
-
-            float d = sqrtf(dx * dx + dy * dy);
-
-            p1->m_position =  p0->m_position + d;
+            Contour::calcPointPosition(p1);
 
             setContourBorderSegmentData(p0, p1, prevState, zValue, brdr );
 
-            p1->m_position = pp;
+            p1->m_position = pPos;
         }
-
-        prevState = state;
     }
 }
 
@@ -485,8 +474,6 @@ void MeshCash::setContourBorderSegmentData(Point *p0, Point *p1, bool prevState,
 
 void MeshCash::setBorderVertex(int idx, Point *p, float z, float offset, float v, Border *brdr)
 {
-    idx;
-
     int vi = idx * 3;
 
     m_vertices[vi + 0] = p->x + p->m_miterX * offset / p->m_dotPr;

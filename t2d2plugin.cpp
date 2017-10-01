@@ -12,6 +12,7 @@
 #define _CAST_2CONTOUR(x)   (static_cast<t2d2::Contour*>(x))
 #define _CAST_2MCASH(x)     (static_cast<t2d2::MCash*>(x))
 #define _CAST_2MESHCASH(x)  (static_cast<t2d2::MeshCash*>(x))
+#define _CAST_2COLLCASH(x)  (static_cast<t2d2::ColliderCash*>(x))
 #define _CAST_2BORDERS(x)   (static_cast<t2d2::Borders*>(x))
 
 int t2d2_version()
@@ -39,12 +40,42 @@ int t2d2_getAnswer()
     return 42;
 }
 
+#ifndef ANDROID
 
 void t2d2_setLogFile(const char *szLogFileName, bool trunc)
 {
     t2d2::Log::setLogFile(szLogFileName, trunc);
 }
 
+void t2d2_saveTrMatrix(const char *szFileName, float *trMtx)
+{
+    std::ofstream fs(szFileName, std::ofstream::binary | std::ofstream::trunc);
+
+    if (!fs.is_open()) {
+        t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
+        return;
+    }
+
+    fs.write((char *)trMtx, sizeof(float) * 16);
+
+    fs.close();
+}
+
+void t2d2_loadTrMatrix(const char *szFileName, float *trMtx)
+{
+    std::ifstream fs(szFileName, std::ifstream::binary);
+
+    if (!fs.is_open()) {
+        t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
+        return;
+    }
+
+    fs.read((char *) trMtx, sizeof(float) * 16);
+
+    fs.close();
+}
+
+#endif
 
 //===============================================================
 
@@ -64,7 +95,7 @@ T2d2Hndl t2d2_polygonGroupLoadFromFile(const char *szFileName)
 
     if (!fs.is_open()) {
         t2d2::Log(t2d2::ltError)<<__FUNCTION__<<" Unable to open: "<<szFileName;
-        return nullptr;
+        return 0;
     }
 
     t2d2::PolygonGroup *pg = t2d2::PolygonGroup::loadFromFile(fs);
@@ -108,9 +139,9 @@ T2d2Hndl t2d2_polygonGroupGetBorders(T2d2Hndl pg)
     return _CAST_2POLY_G(pg)->borders();
 }
 
-T2d2Hndl t2d2_polygonGroupCreateMeshCash(T2d2Hndl pg, int subMeshNumber)
+T2d2Hndl t2d2_polygonGroupCreateMeshCash(T2d2Hndl pg, int subMeshNumber, bool validate)
 {
-    return _CAST_2POLY_G(pg)->createMeshCash (subMeshNumber);
+    return _CAST_2POLY_G(pg)->createMeshCash (subMeshNumber, validate);
 }
 
 void t2d2_polygonGroupDeleteMeshCash(T2d2Hndl pg, T2d2Hndl mcash)
@@ -134,26 +165,40 @@ void t2d2_polygonGroupGetColliderCOM(T2d2Hndl pg, float *out)
     _CAST_2POLY_G(pg)->getColliderCOM(out, out+1);
 }
 
-float t2d2_polygonGroupGetColliderComX(T2d2Hndl pg)
-{
-    return _CAST_2POLY_G(pg)->getColliderComX();
-}
-
-float t2d2_polygonGroupGetColliderComY(T2d2Hndl pg)
-{
-    return _CAST_2POLY_G(pg)->getColliderComY();
-}
-
 int t2d2_polygonGroupGetColliderPathNum(T2d2Hndl pg)
 {
     return _CAST_2POLY_G(pg)->getColliderPathNum();
 }
 
-bool t2d2_polygonGroupClip(T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx)
+T2d2Hndl t2d2_polygonGroupCreateColliderCash(T2d2Hndl pg)
+{
+    return _CAST_2POLY_G(pg)->createColliderCash();
+}
+
+void t2d2_polygonGroupDeleteColliderCash(T2d2Hndl pg, T2d2Hndl ccash)
+{
+    _CAST_2POLY_G(pg)->deleteColliderCash(_CAST_2COLLCASH(ccash));
+}
+
+void t2d2_polygonGroupAddClippingClip(T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx)
+{
+    _CAST_2POLY_G(pg)->addClippingClip(_CAST_2POLY_G(clipperPg), trMtx);
+}
+
+bool t2d2_polygonGroupClip(T2d2Hndl pg)
+{
+    return _CAST_2POLY_G(pg)->clip();
+}
+
+bool t2d2_polygonGroupClipBy(T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx)
 {
     return _CAST_2POLY_G(pg)->clipBy( _CAST_2POLY_G(clipperPg), trMtx);
 }
 
+bool t2d2_polygonGroupSlicePoly(T2d2Hndl pg, T2d2Hndl poly, int gridSize)
+{
+    return _CAST_2POLY_G(pg)->slice(_CAST_2POLY(poly), gridSize);
+}
 
 //===============================================================
 
@@ -322,12 +367,12 @@ unsigned int t2d2_contourGetValue(T2d2Hndl cntr, unsigned int startIndex, unsign
     return _CAST_2CONTOUR(cntr)->getValue(startIndex, length, out, stride, fillByZValue);
 }
 
-unsigned int t2d2_controurGetValue2d(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
+unsigned int t2d2_contourGetValue2d(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
 {
     return _CAST_2CONTOUR(cntr)->getValue2d(startIndex, length, out);
 }
 
-unsigned int t2d2_controurGetValue3d(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
+unsigned int t2d2_contourGetValue3d(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
 {
     return _CAST_2CONTOUR(cntr)->getValue3d(startIndex, length, out);
 }
@@ -370,6 +415,11 @@ unsigned int t2d2_contourAddValue3d(T2d2Hndl cntr, float *in, unsigned int lengt
 void t2d2_contourSetBorderFlags(T2d2Hndl cntr, int startIndex, int *flags, int length)
 {
     _CAST_2CONTOUR(cntr)->setBorderFlags(startIndex, flags, length);
+}
+
+void t2d2_contourGetBorderFlags(T2d2Hndl cntr, int startIndex, int length, int *out)
+{
+    _CAST_2CONTOUR(cntr)->getBorderFlags(startIndex, length, out);
 }
 
 void t2d2_contourUpdateBorderGeometry(T2d2Hndl cntr)
@@ -543,6 +593,37 @@ void t2d2_mcashGetIndices(T2d2Hndl mcash, unsigned int smi, int *out)
     _CAST_2MESHCASH(mcash)->cpyIndices(smi, out);
 }
 
+void t2d2_colliderCashOffset(T2d2Hndl ccash, float offset)
+{
+    return _CAST_2COLLCASH(ccash)->offset(offset);
+}
+
+float t2d2_colliderCashArea(T2d2Hndl ccash)
+{
+    return _CAST_2COLLCASH(ccash)->area();
+}
+
+void t2d2_colliderCashCOM(T2d2Hndl ccash, float *out)
+{
+    _CAST_2COLLCASH(ccash)->com(out);
+}
+
+int t2d2_colliderCashPathNum(T2d2Hndl ccash)
+{
+    return _CAST_2COLLCASH(ccash)->num();
+}
+
+int t2d2_colliderCashPathLen(T2d2Hndl ccash, int index)
+{
+    return _CAST_2COLLCASH(ccash)->len(index);
+}
+
+void t2d2_colliderCashPath(T2d2Hndl ccash, int index, float *out)
+{
+    _CAST_2COLLCASH(ccash)->getPoints(index, out);
+}
+
+
 bool t2d2_utilPointOnContour(float *polyPoints, int length, int stride, float *point)
 {
     return t2d2::util::pointOnContour(polyPoints, length, stride, point);
@@ -592,6 +673,18 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

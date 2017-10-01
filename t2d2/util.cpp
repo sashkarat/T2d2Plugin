@@ -1,14 +1,19 @@
 #include <stdlib.h>
 #include <cstring>
 #include <algorithm>
+
 #include "util.h"
+#include "contour.h"
+
 
 #include "log.h"
 
 
 using namespace t2d2;
+//using namespace t2d2::util;
 
-bool t2d2::util::almostEqual2sComplement(float a, float b, int maxUlps)
+
+bool util::almostEqual2sComplement(float a, float b, int maxUlps)
 
 {
     // Make sure maxUlps is non-negative and small enough that the
@@ -45,27 +50,27 @@ bool t2d2::util::almostEqual2sComplement(float a, float b, int maxUlps)
 }
 
 
-struct _P {
+struct _Point {
     float sdata[2];
     float *data;
 
-    _P(p2t::Point *p) {data = sdata; data[0] = p->x; data[1] = p->y;}
-    _P(float x, float y) {data = sdata; data[0] = x; data[1] = y;}
-    _P(float * _data) { data = _data;}
+    _Point(p2t::Point *p) {data = sdata; data[0] = p->x; data[1] = p->y;}
+    _Point(float x, float y) {data = sdata; data[0] = x; data[1] = y;}
+    _Point(float * _data) { data = _data;}
 
-    inline float x() {return data[0];}
-    inline float y() {return data[1];}
+    inline const float x() const {return data[0];}
+    inline const float y() const {return data[1];}
     inline void setX(float x) {data[0] = x;}
     inline void setY(float y) {data[1] = y;}
 
-    friend inline bool operator == (_P &a, _P &b) {
+    friend inline bool operator == (_Point &a, _Point &b) {
         if ( t2d2::util::almostEqual2sComplement(a.x(), b.x(), 1)
                 && t2d2::util::almostEqual2sComplement(a.y(), b.y(), 1))
             return true;
         return false;
     }
 
-    inline static float dot(_P &a, _P &b) {
+    inline static float dot(_Point &a, _Point &b) {
         return a.x() * b.x() + a.y() * b.y();
     }
 
@@ -73,10 +78,10 @@ struct _P {
         return x() * x() + y() * y();
     }
 
-    static friend Log &operator <<(Log &l, _P &p) {
-        l<<"["<<p.x()<<p.y()<<"]";
-        return l;
-    }
+//    static friend Log &operator <<(Log &l, _Point &p) {
+//        l<<"["<<p.x()<<p.y()<<"]";
+//        return l;
+//    }
 };
 
 
@@ -87,14 +92,14 @@ public:
     float ymin;
     float ymax;
 
-    inline _BoundingBox(_P &p1, _P &p2) {
+    inline _BoundingBox(_Point &p1, _Point &p2) {
         xmin = std::min(p1.x(), p2.x());
         xmax = std::max(p1.x(), p2.x());
         ymin = std::min(p1.y(), p2.y());
         ymax = std::max(p1.y(), p2.y());
     }
 
-    inline bool contains(_P &p) {
+    inline bool contains(_Point &p) {
         return
                 t2d2::util::lessOrEq(xmin, p.x()) &&
                 t2d2::util::lessOrEq(p.x(), xmax) &&
@@ -103,19 +108,19 @@ public:
     }
 };
 
-inline float triOrient (_P &p0, _P &p1, _P &p2)
+inline float triOrient (const _Point &p0, const _Point &p1, const _Point &p2)
 {
     return (p1.x() - p0.x()) * (p2.y() - p0.y()) - (p2.x() - p0.x()) * (p1.y() - p0.y());
 }
 
 
-inline int orientation(_P &p0, _P &p1, _P &p2)
+inline int orientation(const _Point &p0, const _Point &p1, const _Point &p2)
 {
     float v = triOrient (p0, p1, p2);
     return t2d2::util::almostEqual2sComplement(v, 0, 1) ? 0 : ((v > 0) ? 1 : 2);
 }
 
-bool isIntersection(_P &pa, _P &pb, _P &pc, _P &pd)
+bool isIntersection(_Point &pa, _Point &pb, _Point &pc, _Point &pd)
 {
 
     bool co = true;
@@ -161,13 +166,13 @@ bool isIntersection(_P &pa, _P &pb, _P &pc, _P &pd)
     return false;
 }
 
-bool projectPointOnLine(_P &a, _P &b, _P &c, _P &res)
+bool projectPointOnLine(_Point &a, _Point &b, _Point &c, _Point &res)
 {
   // get dot product of e1, e2
-  _P e1 (b.x() - a.x(), b.y() - a.y());
-  _P e2 (c.x() - a.x(), c.y() - a.y());
+  _Point e1 (b.x() - a.x(), b.y() - a.y());
+  _Point e2 (c.x() - a.x(), c.y() - a.y());
 
-  float valDp = _P::dot(e1, e2);
+  float valDp = _Point::dot(e1, e2);
   // get squared length of e1
   float len2 = e1.len2();
 
@@ -181,25 +186,35 @@ bool projectPointOnLine(_P &a, _P &b, _P &c, _P &res)
 
 bool t2d2::util::intersects(float *a, float *b, float *c, float *d)
 {
-    return isIntersection(_P(a), _P(b), _P(c), _P(d));
+    _Point ap(a);
+    _Point bp(b);
+    _Point cp(c);
+    _Point dp(d);
+
+    return isIntersection(ap, bp, cp, dp);
 }
 
 bool t2d2::util::pointToSegmentProjection(float *a, float *b, float *c, float *res)
 {
-    return projectPointOnLine(_P(a), _P(b), _P(c), _P(res));
+    _Point ap(a);
+    _Point bp(b);
+    _Point cp(c);
+    _Point rp(res);
+
+    return projectPointOnLine(ap, bp, cp, rp);
 }
 
 bool t2d2::util::pointOnSegment(float *a, float *b, float *c)
 {
-    _P _a(a);
-    _P _b(b);
-    _P _c(c);
+    _Point _a(a);
+    _Point _b(b);
+    _Point _c(c);
 
     if (_a ==_c || _b == _c) {
         return true;
     }
 
-    _P res(0,0);
+    _Point res(0,0);
 
     if (!projectPointOnLine(_a, _b, _c, res))
         return false;
@@ -216,8 +231,8 @@ bool t2d2::util::pointOnSegment(float *a, float *b, float *c)
 bool t2d2::util::pointOnContour(float *poly, int length, int stride, float *point)
 {
     float *pC = point;
-    float pD[2];
-    pD[1] = pC[1];
+//    float pD[2];
+//    pD[1] = pC[1];
 
     for(int i = 0; i < length; i++)
     {
@@ -280,7 +295,10 @@ bool t2d2::util::contourContains(float *poly, int length, int stride, float *poi
 
                 float *_pA = poly + in * stride;
                 float *_pB = poly + jn * stride;
-                oCAB = orientation(_P(pC), _P(_pA), _P(_pB));
+
+
+
+                oCAB = orientation(_Point(pC), _Point(_pA), _Point(_pB));
                 in++;
             }
 
@@ -291,7 +309,7 @@ bool t2d2::util::contourContains(float *poly, int length, int stride, float *poi
 
                 float *_pA = poly + ib * stride;
                 float *_pB = poly + jb * stride;
-                oCAPrA = orientation(_P(pC), _P(_pB), _P(_pA));
+                oCAPrA = orientation(_Point(pC), _Point(_pB), _Point(_pA));
                 ib--;
             }
 
@@ -351,17 +369,17 @@ int t2d2::util::findNearestEdgeToPoint(float *contour, int length, int stride, f
 {
     float d2;
     int index = -1;
-    _P outP(0,0);
-    _P delta(0,0);
+    _Point outP(0,0);
+    _Point delta(0,0);
 
     for(int i = 0; i < length; i++) {
         float *pA = contour + i * stride;
         float *pB = contour + _index (i + 1, length) * stride;
 
-        _P a(pA);
-        _P b(pB);
-        _P c(point);
-        _P res(0,0);
+        _Point a(pA);
+        _Point b(pB);
+        _Point c(point);
+        _Point res(0,0);
 
         if (!projectPointOnLine(a, b, c, res))
             continue;
@@ -385,7 +403,7 @@ int t2d2::util::findNearestEdgeToPoint(float *contour, int length, int stride, f
         }
     }
 
-    if (out != nullptr && index >= 0) {
+    if (out != 0 && index >= 0) {
         out[0] = outP.x();
         out[1] = outP.y();
     }
@@ -393,7 +411,7 @@ int t2d2::util::findNearestEdgeToPoint(float *contour, int length, int stride, f
     return index;
 }
 
-bool _pointOnSegment(_P &pA, _P &pB, _P &pC)
+bool _pointOnSegment(_Point &pA, _Point &pB, _Point &pC)
 {
     _BoundingBox bb(pA, pB);
 
@@ -407,22 +425,22 @@ bool _pointOnSegment(_P &pA, _P &pB, _P &pC)
     return false;
 }
 
-bool util::hasContourEdgeSelfIntersection(Contour *contour)
+bool util::hasContourEdgeSelfIntersection(t2d2::Contour *contour)
 {
     unsigned int l = contour->length();
 
     for(unsigned int i = 0; i < l; i++) {
 
-        _P pa((*contour)[i]);
-        _P pb((*contour)[i + 1]);
+        _Point pa((*contour)[i]);
+        _Point pb((*contour)[i + 1]);
 
         int is = _index (i + 2, l);
         int ie = _index (i -1, l);
 
         while (is != ie) {
 
-            _P pc((*contour)[is]);
-            _P pd((*contour)[is + 1]);
+            _Point pc((*contour)[is]);
+            _Point pd((*contour)[is + 1]);
 
             if (isIntersection (pa, pb, pc, pd))
                 return true;
@@ -433,11 +451,11 @@ bool util::hasContourEdgeSelfIntersection(Contour *contour)
     return false;
 }
 
-bool t2d2::util::contourContainsSegment(t2d2::Contour *contour, t2d2::Point *pointA, t2d2::Point *pointB, bool segmentIntersectionRule)
+bool util::contourContainsSegment(t2d2::Contour *contour, t2d2::Point *pointA, t2d2::Point *pointB, bool segmentIntersectionRule)
 {
-    _P pC(pointA);
-    _P pCR(pointA);
-    _P pD(pointB);
+    _Point pC(pointA);
+    _Point pCR(pointA);
+    _Point pD(pointB);
 
 
     int c = 0;
@@ -446,8 +464,8 @@ bool t2d2::util::contourContainsSegment(t2d2::Contour *contour, t2d2::Point *poi
     for(int i = 0; i < length; i++)
     {
         // set next segment as pA & pB
-        _P pA((*contour)[i]);
-        _P pB((*contour)[i+1]);
+        _Point pA((*contour)[i]);
+        _Point pB((*contour)[i+1]);
 
         // check point on Segment
 
@@ -486,8 +504,8 @@ bool t2d2::util::contourContainsSegment(t2d2::Contour *contour, t2d2::Point *poi
             while (oCAB == 0) {
                 in = _index (in, length);
 
-                _P _pA((*contour)[in]);
-                _P _pB((*contour)[in + 1]);
+                _Point _pA((*contour)[in]);
+                _Point _pB((*contour)[in + 1]);
 
                 oCAB = orientation(pC, _pA, _pB);
                 in = _index (in + 1, length);
@@ -496,8 +514,8 @@ bool t2d2::util::contourContainsSegment(t2d2::Contour *contour, t2d2::Point *poi
             while (oCAPrA == 0) {
                 ib = _index (ib, length);
 
-                _P _pA((*contour)[ib]);
-                _P _pB((*contour)[ib + 1]);
+                _Point _pA((*contour)[ib]);
+                _Point _pB((*contour)[ib + 1]);
 
                 oCAPrA = orientation(pC, _pB, _pA);
                 ib = _index (ib - 1, length);
@@ -531,8 +549,8 @@ bool util::isHoleContourValid(Contour *holeContour, Contour *contour)
         if (!contourContainsSegment (contour, iPA, iPB, false))
             return false;
 
-        _P pa((*holeContour)[i]);
-        _P pb((*holeContour)[i + 1]);
+        _Point pa((*holeContour)[i]);
+        _Point pb((*holeContour)[i + 1]);
 
         //self intersection check
 
@@ -540,8 +558,8 @@ bool util::isHoleContourValid(Contour *holeContour, Contour *contour)
         int ie = _index (i -1, l);
 
         while (is != ie) {
-            _P pc((*holeContour)[is]);
-            _P pd((*holeContour)[is + 1]);
+            _Point pc((*holeContour)[is]);
+            _Point pd((*holeContour)[is + 1]);
 
             if (isIntersection (pa, pb, pc, pd))
                 return false;
@@ -560,7 +578,7 @@ void t2d2::util::getBoundingBox(float *contour, int length, int stride, float *o
     float ymax = -1e37f;
 
     for(int i = 0; i < length; i++) {
-        _P p(contour);
+        _Point p(contour);
         if (p.x() < xmin)
             xmin = p.x();
         if (p.x() > xmax)
@@ -622,4 +640,66 @@ void util::triMidPoint(Point *pA, Point *pB, Point *pC, float *outX, float *outY
 {
     *outX = (pA->x + pB->x + pC->x) / 3;
     *outY = (pA->y + pB->y + pC->y) / 3;
+}
+
+
+void util::avrPoint(float *in, unsigned int sIndex, float wsize, float &avrX, float &avrY)
+{
+    avrX = avrY = 0;
+
+    for(unsigned int i = 0; i < wsize; i++) {
+        unsigned int index = (i + sIndex) * 2;
+        avrX += in [index];
+        avrY += in [index + 1];
+    }
+
+    avrX /= wsize;
+    avrY /= wsize;
+}
+
+
+void util::avrPointOnClosedContour(float *in, unsigned int len, unsigned int sIndex, float wsize, float &avrX, float &avrY)
+{
+    avrX = avrY = 0;
+
+    for(unsigned int i = 0; i < wsize; i++) {
+        unsigned int index = _idx((i + sIndex) * 2, len);
+        avrX +=  in [index];
+        avrY +=  in [index + 1];
+    }
+
+    avrX /= wsize;
+    avrY /= wsize;
+}
+
+bool util::simplifyPoly(float *in, unsigned int len, float *out, unsigned int &lenOut, int wsize, int step)
+{
+    if (step < 2)
+        return false;
+    if (wsize >= len)
+        return false;
+
+    std::vector<float> outVec;
+
+    int ei = len - wsize;
+
+    for(unsigned int i = 0; i < ei; i+= step) {
+
+        float accX = 0;
+        float accY = 0;
+        for (unsigned int j = 0; j < wsize; j++) {
+            unsigned int index = (i + j) * 2;
+            accX += in[index];
+            accY += in[index+1];
+        }
+        accX /= wsize;
+        accY /= wsize;
+
+
+        outVec.push_back(accX);
+        outVec.push_back(accY);
+
+    }
+
+
 }

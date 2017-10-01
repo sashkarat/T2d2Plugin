@@ -9,6 +9,8 @@
 
 namespace t2d2 {
 
+class SimpPolyData;
+class SimpContourData;
 class Point;
 class BBox;
 class GridIndexator;
@@ -37,6 +39,8 @@ protected:
 
     Contour*                m_outline;
     ContourPtrVec           m_holes;
+
+    GridIndexator*          m_indexator;
 
     UvProjection*           m_uvProjection;
 
@@ -81,10 +85,13 @@ public:
     Contour* addHole();
     void    deleteHole(unsigned int index);
 
+    inline GridIndexator * indexator() {return m_indexator;}
+
     unsigned int triNumber();
     Polygon::Triangle*  tri(int index);
 
     bool validate       (bool withHoles);
+    void markValid();
     void triangulate    ();
     void deleteTriangles();
 
@@ -99,8 +106,6 @@ public:
     void updateBorderGeometry();
 
     BBox *bbox();
-
-    t2d2::Point* findPoint(float x, float y);
 
     UvProjection*   getUvProjection() {return m_uvProjection;}
 
@@ -139,6 +144,9 @@ public:
     void updateArea();
     void updateCOM();
 
+
+    static t2d2::SimpPolyData *createSimpPolyData(Polygon *poly, float *trMtx);
+
 protected:
 
     void insertNext(Polygon *p);
@@ -148,11 +156,13 @@ protected:
 
     void updateFirst();
 
-    bool clipBy(Polygon* clipperPoly, std::vector<t2d2::Polygon*> &outPolyVec);
+    bool clipBy(SimpPolyData *spd, std::vector<t2d2::Polygon*> &outPolyVec);
 
 
-    static void addPolyToClipper(ClipperLib::Clipper &clipper, Polygon*poly, ClipperLib::PolyType pt);
+    static void addSubjToClipper(ClipperLib::Clipper &clipper, Polygon*poly);
+    static void addClipToClipper(ClipperLib::Clipper &clipper, t2d2::SimpPolyData *spd);
     static void buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, t2d2::Polygon *basePoly, std::vector<t2d2::Polygon*> &outVec);
+    static void copyPolyAttributes(Polygon* dp, Polygon *sp);
 };
 
 }

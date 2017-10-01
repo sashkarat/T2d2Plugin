@@ -5,7 +5,7 @@
 
 using namespace  t2d2;
 
-LogCallback Log::ms_logCallback = nullptr;
+LogCallback Log::ms_logCallback = 0;
 std::ofstream Log::m_logFs;
 
 Log::Log() :
@@ -35,7 +35,7 @@ Log::~Log()
 
     std::string outs = outss.str();
 
-    if (ms_logCallback != nullptr) {
+    if (ms_logCallback != 0) {
         ms_logCallback(outs.c_str());
     } else {
         if (m_logType == ltDebug)
@@ -54,6 +54,7 @@ void Log::setCallback(LogCallback lcb)
     ms_logCallback = lcb;
 }
 
+#ifndef ANDROID
 void Log::setLogFile(const char *logFileName, bool trunc)
 {
 
@@ -79,3 +80,4 @@ void Log::setLogFile(const char *logFileName, bool trunc)
 
     m_logFs<<"\r\nLog opened: "<<ctime(&t)<<"\r\n";
 }
+#endif

@@ -23,4 +23,9 @@ void t2d2::UvProjection::computeUV(t2d2::Point *p, float &u, float &v)
 
 }
 
+void t2d2::UvProjection::copy(t2d2::UvProjection *d, t2d2::UvProjection *s)
+{
+    memcpy(static_cast<void*>(d->m_mtx), static_cast<void*>(s->m_mtx), sizeof(float)*16);
+}
+
 

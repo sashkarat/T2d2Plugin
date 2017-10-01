@@ -4,7 +4,9 @@
 #
 #-------------------------------------------------
 
-CONFIG -= Qt
+#CONFIG -= console c++11
+CONFIG -= app_bundle
+CONFIG -= qt
 
 TARGET = t2d2plugin
 TEMPLATE = lib
@@ -31,7 +33,7 @@ SOURCES += \
     poly2tri_f/sweep/sweep_context.cc \
     poly2tri_f/common/shapes.cc \
     t2d2/log.cpp \
-    t2d2/util.cpp \
+    t2d2/point.cpp \
     t2d2/bbox.cpp \
     t2d2/polygon.cpp \
     t2d2/polygongroup.cpp \
@@ -40,7 +42,10 @@ SOURCES += \
     t2d2/gridindexator.cpp \
     t2d2/border.cpp \
     t2d2plugin.cpp \
-    t2d2/meshcash.cpp
+    t2d2/meshcash.cpp \
+    t2d2/simpledata.cpp \
+    t2d2/util.cpp \
+    t2d2/collidercash.cpp
 
 HEADERS += \
     clipperlib_f/clipper.hpp \
@@ -52,17 +57,20 @@ HEADERS += \
     poly2tri_f/common/shapes.h \
     poly2tri_f/common/utils.h \
     t2d2plugin.h \
-    t2d2/log.h \
     t2d2/t2d2.h \
+    t2d2/log.h \
+    t2d2/point.h \
+    t2d2/simpledata.h \
     t2d2/bbox.h \
     t2d2/polygon.h \
-    t2d2/util.h \
-    t2d2/polygongroup.h \
     t2d2/contour.h \
+    t2d2/polygongroup.h \
     t2d2/uvprojection.h \
     t2d2/gridindexator.h \
     t2d2/border.h \
-    t2d2/meshcash.h
+    t2d2/meshcash.h \
+    t2d2/util.h \
+    t2d2/collidercash.h
 
 android {
     #message(ANDROID SPEC)

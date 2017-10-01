@@ -39,7 +39,7 @@
 #define CLIPPER_VERSION "6.4.2"
 
 #ifdef QT4
-#define nullptr 0
+#define 0 0
 #endif
 
 //use_int32: When enabled 32bit ints are used instead of 64bit ints. This

@@ -34,8 +34,9 @@ public:
     }
 
     static void setCallback(LogCallback lcb);
-
+#ifndef ANDROID
     static void setLogFile(const char *logFileName, bool trunc);
+#endif
 
 private:
     static LogCallback ms_logCallback;

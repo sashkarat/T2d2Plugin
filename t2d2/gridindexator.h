@@ -7,11 +7,14 @@
 namespace t2d2 {
 
 class Contour;
+class Polygon;
 
 class GridIndexator
 {
     struct Cell {
         std::vector<t2d2::Point *> m_points;
+        t2d2::Point *m_p;
+        t2d2::Point *m_lp;
     };
 
     float m_xMin;
@@ -38,8 +41,10 @@ protected:
     int getIndex(float x, float y);
     int getIndex(t2d2::Point *p);
 
+    void pushContour(Contour *cntr);
+
 public:
-    GridIndexator(t2d2::Contour *contour, int gridSize);
+    GridIndexator(t2d2::Polygon *poly, int gridSize);
     ~GridIndexator();
     t2d2::Point * getPoint(float x, float y);
     t2d2::Point * getPoint(t2d2::Point *p);

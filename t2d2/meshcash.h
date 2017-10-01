@@ -6,6 +6,7 @@
 
 namespace t2d2 {
 
+class Point;
 class Contour;
 class Border;
 class Polygon;
@@ -21,7 +22,7 @@ protected:
         unsigned int m_triNum;
         int *m_tri;
         unsigned int m_triDone;
-        SubMeshTriangles () : m_triNum(0), m_tri(nullptr) {}
+        SubMeshTriangles () : m_triNum(0), m_tri(0) {}
         ~SubMeshTriangles() {if (m_tri) delete [] m_tri;}
 
         void allocate() {
@@ -48,7 +49,7 @@ public:
     MeshCash(PolygonGroup *pg);
     ~MeshCash();
 
-    bool build(unsigned int subMeshNumber);
+    bool build(unsigned int subMeshNumber, bool doValidation);
 
     inline bool isValid() const { return m_valid;}
 

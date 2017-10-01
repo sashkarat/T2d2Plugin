@@ -4,15 +4,16 @@
 #include <fstream>
 
 #include "t2d2.h"
+#include "clipperlib_f/clipper.hpp"
 
 
 namespace t2d2 {
 
-enum MCashContentOptions;
-enum MCashStageOptions;
-
+class SimpPolyData;
+class SimpContourData;
 class MCash;
 class MeshCash;
+class ColliderCash;
 class Polygon;
 class Borders;
 
@@ -27,51 +28,7 @@ class PolygonGroup
 
     int m_colliderPathNum;
 
-//    class ColliderCash {
-//    protected:
-//        class ColliderData {
-//        public:
-//            float *m_points;
-//            size_t m_len;
-
-//            ColliderData() : m_points(nullptr), m_len(0) {}
-
-//            ~ColliderData() {if (m_points) delete [] m_points;}
-
-//            void alloc(size_t len) {
-//                m_len = len;
-//                if (m_points) delete [] m_points;
-//                m_points = new float [m_len * 2];
-//            }
-
-//            void copy(float *out) {
-//                memcpy(static_cast<void*>(out),
-//                       static_cast<void*>(m_points),
-//                       m_len*2*sizeof(float));
-//            }
-//        };
-//        ColliderData *m_data;
-//    public:
-//        size_t  m_colliderNum;
-
-//        ColliderCash() : m_data(nullptr), m_colliderNum(0) {}
-
-//        ~ColliderCash() {if (m_data) delete [] m_data;}
-
-//        void alloc(size_t colliderNum) {
-//            m_colliderNum = colliderNum;
-//            if (m_data) delete [] m_data;
-//            m_data = new ColliderData[m_colliderNum]; }
-
-//        size_t len(size_t index) {
-//            return m_data[index].m_len;
-//        }
-
-//        void copy(size_t index, float *out) {
-//            m_data[index].copy(out);
-//        }
-//    };
-
+    SimpPolyData *m_clippingClip;
 
 public :
 
@@ -85,8 +42,12 @@ public :
     void        deletePolygon(Polygon *p);
     Borders*    borders() {return m_borders;}
 
-    MeshCash *createMeshCash(int subMeshNum);
+    MeshCash *createMeshCash(int subMeshNum, bool validate);
     void deleteMeshCash (MeshCash *mcash);
+
+    ColliderCash *createColliderCash();
+    void deleteColliderCash(ColliderCash * ccash);
+
 
 
 
@@ -96,8 +57,7 @@ public :
     inline void  getColliderCOM(float *x, float *y) const {*x = m_colliderComX; *y = m_colliderComY;}
     inline float getColliderComX() const {return m_colliderComX;}
     inline float getColliderComY() const {return m_colliderComY;}
-    inline int   getColliderPathNum() const {return m_colliderPathNum;}
-
+    inline int   getColliderPathNum() const { return m_colliderPathNum;}
 
     static void             saveToFile(PolygonGroup *pg, std::ofstream &fs);
 
@@ -106,12 +66,28 @@ public :
 
     bool clipBy(t2d2::PolygonGroup *clipperPg, float *trMtx);
 
+    void addClippingClip(t2d2::PolygonGroup *pg, float *trMtx);
+
+    bool clip();
+
+    bool slice(Polygon *poly, int gridSize);
+
+
 protected:
 
     void deletePolygons();
 
 
-    bool clipBy(t2d2::Polygon *clipperPoly);
+    bool clipBy(t2d2::SimpPolyData *spd);
+
+    void clippingClearClipData();
+
+    SimpPolyData *clippingFindLastClipData();
+
+    bool clippingOverlapTest(SimpPolyData *spd);
+
+    static void clippingAddClipToClipper(ClipperLib::Clipper &cl, SimpPolyData *spd);
+    static void clippingAddSubjToClipper(ClipperLib::Clipper &cl, Polygon *poly);
 };
 
 }

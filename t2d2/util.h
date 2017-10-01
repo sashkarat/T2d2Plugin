@@ -3,7 +3,8 @@
 
 #include <algorithm>
 
-#include "contour.h"
+
+#include "t2d2.h"
 
 
 
@@ -19,6 +20,10 @@ namespace t2d2 {
             return (l + (i % l)) % l;
         }
 
+        inline unsigned int _idx(unsigned int index, unsigned int l) {
+            return index % l;
+        }
+
         bool almostEqual2sComplement(float a, float b, int maxUlps);
 
         inline bool lessOrEq(float a, float b)
@@ -29,7 +34,7 @@ namespace t2d2 {
 
         inline bool moreOrEq(float a, float b)
         {
-            (t2d2::util::almostEqual2sComplement(a, b, 1) || a > b);
+            return (t2d2::util::almostEqual2sComplement(a, b, 1) || a > b);
         }
 
         bool intersects(float *a, float *b, float *c, float *d);
@@ -49,7 +54,7 @@ namespace t2d2 {
         int findNearestEdgeToPoint(float *contour, int length, int stride, float *point, float *out);
 
 
-        bool hasContourEdgeSelfIntersection(Contour *contour);
+        bool hasContourEdgeSelfIntersection(t2d2::Contour *contour);
 
         bool contourContainsSegment(t2d2::Contour *contour, t2d2::Point *pointA, t2d2::Point *pointB, bool segmentIntersectionRule);
 
@@ -87,7 +92,17 @@ namespace t2d2 {
         {
             return x0 * x1 + y0 * y1;
         }
-    }
 
+        inline bool pointsEqual(float x0, float y0, float x1, float y1, float eps)
+        {
+            return ((fastabs(x1 - x0) <= eps) && (fastabs(y1 - y0) <= eps));
+        }
+
+        void avrPoint(float *in, unsigned int sIndex, float wsize, float &avrX, float &avrY);
+
+        void avrPointOnClosedContour(float *in, unsigned int len, unsigned int sIndex, float wsize, float &avrX, float &avrY);
+
+        bool simplifyPoly(float *in, unsigned int len, float *out, unsigned int &lenOut, int wsize, int step);
+    }
 }
 #endif // UTIL_H

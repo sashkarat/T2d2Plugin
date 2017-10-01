@@ -25,11 +25,18 @@ extern "C" T2D2_EXPORT int t2d2_getAnswer();
 // common func
 
 extern "C" T2D2_EXPORT int  t2d2_version();
+
 extern "C" T2D2_EXPORT void t2d2_msgVersion();
 extern "C" T2D2_EXPORT void t2d2_setLogCallback(LogCallback lcb);
 extern "C" T2D2_EXPORT void t2d2_echoLog(const char *szStr);
-extern "C" T2D2_EXPORT void t2d2_setLogFile(const char *szLogFileName, bool trunc);
 
+#ifndef ANDROID
+
+extern "C" T2D2_EXPORT void t2d2_setLogFile(const char *szLogFileName, bool trunc);
+extern "C" T2D2_EXPORT void t2d2_saveTrMatrix(const char *szFileName, float *trMtx);
+extern "C" T2D2_EXPORT void t2d2_loadTrMatrix(const char *szFileName, float *trMtx);
+
+#endif
 
 // polygon group func
 
@@ -45,17 +52,22 @@ extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeletePolygon  (T2d2Hndl pg, T2
 
 extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupGetBorders     (T2d2Hndl pg);
 
-extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateMeshCash   (T2d2Hndl pg, int subMeshNumber);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateMeshCash   (T2d2Hndl pg, int subMeshNumber, bool validate);
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeleteMeshCash   (T2d2Hndl pg, T2d2Hndl mcash);
 
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupUpdateColliderGeomValues (T2d2Hndl pg);
 extern "C" T2D2_EXPORT float    t2d2_polygonGroupGetColliderArea (T2d2Hndl pg);
 extern "C" T2D2_EXPORT void     t2d2_polygonGroupGetColliderCOM  (T2d2Hndl pg, float *out);
+extern "C" T2D2_EXPORT int      t2d2_polygonGroupGetColliderPathNum (T2d2Hndl pg);
 
-extern "C" T2D2_EXPORT float     t2d2_polygonGroupGetColliderComX  (T2d2Hndl pg);
-extern "C" T2D2_EXPORT float     t2d2_polygonGroupGetColliderComY  (T2d2Hndl pg);
-extern "C" T2D2_EXPORT int       t2d2_polygonGroupGetColliderPathNum (T2d2Hndl pg);
-extern "C" T2D2_EXPORT bool      t2d2_polygonGroupClip (T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx);
+extern "C" T2D2_EXPORT T2d2Hndl t2d2_polygonGroupCreateColliderCash (T2d2Hndl pg);
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupDeleteColliderCash (T2d2Hndl pg, T2d2Hndl ccash);
+
+extern "C" T2D2_EXPORT void     t2d2_polygonGroupAddClippingClip(T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx);
+extern "C" T2D2_EXPORT bool     t2d2_polygonGroupClip(T2d2Hndl pg);
+extern "C" T2D2_EXPORT bool     t2d2_polygonGroupClipBy (T2d2Hndl pg, T2d2Hndl clipperPg, float *trMtx);
+
+extern "C" T2D2_EXPORT bool     t2d2_polygonGroupSlicePoly  (T2d2Hndl pg, T2d2Hndl poly, int gridSize);
 
 
 // polygon func
@@ -106,10 +118,10 @@ extern "C" T2D2_EXPORT unsigned int  t2d2_contourGetValue   (T2d2Hndl cntr,
                                                              unsigned int startIndex, unsigned int length,
                                                              float* out, unsigned int stride, bool fillByZValue);
 
-extern "C" T2D2_EXPORT unsigned int t2d2_controurGetValue2d (T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
+extern "C" T2D2_EXPORT unsigned int t2d2_contourGetValue2d (T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
                                                              float* out);
 
-extern "C" T2D2_EXPORT unsigned int t2d2_controurGetValue3d (T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
+extern "C" T2D2_EXPORT unsigned int t2d2_contourGetValue3d (T2d2Hndl cntr, unsigned int startIndex, unsigned int length,
                                                              float* out);
 
 extern "C" T2D2_EXPORT unsigned int  t2d2_contourSetValue   (T2d2Hndl cntr, unsigned int startIndex,
@@ -130,6 +142,8 @@ extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue2d (T2d2Hndl cntr, floa
 extern "C" T2D2_EXPORT unsigned int  t2d2_contourAddValue3d (T2d2Hndl cntr, float *in, unsigned int length);
 
 extern "C" T2D2_EXPORT void          t2d2_contourSetBorderFlags (T2d2Hndl cntr, int startIndex, int *flags, int length);
+
+extern "C" T2D2_EXPORT void          t2d2_contourGetBorderFlags (T2d2Hndl cntr, int startIndex, int length, int * out);
 
 extern "C" T2D2_EXPORT void          t2d2_contourUpdateBorderGeometry  (T2d2Hndl cntr);
 
@@ -176,6 +190,15 @@ extern "C" T2D2_EXPORT unsigned int t2d2_mcashTriangleNumber    (T2d2Hndl mcash,
 extern "C" T2D2_EXPORT void         t2d2_mcashGetVertices       (T2d2Hndl mcash, float *out);
 extern "C" T2D2_EXPORT void         t2d2_mcashGetUv             (T2d2Hndl mcash, float *out);
 extern "C" T2D2_EXPORT void         t2d2_mcashGetIndices        (T2d2Hndl mcash, unsigned int smi, int *out);
+
+// collider cash func
+
+extern "C" T2D2_EXPORT void     t2d2_colliderCashOffset     (T2d2Hndl ccash, float offset);
+extern "C" T2D2_EXPORT float    t2d2_colliderCashArea       (T2d2Hndl ccash);
+extern "C" T2D2_EXPORT void     t2d2_colliderCashCOM        (T2d2Hndl ccash, float *out);
+extern "C" T2D2_EXPORT int      t2d2_colliderCashPathNum    (T2d2Hndl ccash);
+extern "C" T2D2_EXPORT int      t2d2_colliderCashPathLen    (T2d2Hndl ccash, int index);
+extern "C" T2D2_EXPORT void     t2d2_colliderCashPath       (T2d2Hndl ccash, int index, float *out);
 
 // common utility
 
