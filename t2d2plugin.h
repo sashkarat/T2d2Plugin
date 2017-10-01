@@ -194,6 +194,7 @@ extern "C" T2D2_EXPORT void         t2d2_mcashGetIndices        (T2d2Hndl mcash,
 // collider cash func
 
 extern "C" T2D2_EXPORT void     t2d2_colliderCashOffset     (T2d2Hndl ccash, float offset);
+extern "C" T2D2_EXPORT void     t2d2_colliderCashAverage    (T2d2Hndl ccash, unsigned int wsize, unsigned int step);
 extern "C" T2D2_EXPORT float    t2d2_colliderCashArea       (T2d2Hndl ccash);
 extern "C" T2D2_EXPORT void     t2d2_colliderCashCOM        (T2d2Hndl ccash, float *out);
 extern "C" T2D2_EXPORT int      t2d2_colliderCashPathNum    (T2d2Hndl ccash);

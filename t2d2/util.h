@@ -102,7 +102,7 @@ namespace t2d2 {
 
         void avrPointOnClosedContour(float *in, unsigned int len, unsigned int sIndex, float wsize, float &avrX, float &avrY);
 
-        bool simplifyPoly(float *in, unsigned int len, float *out, unsigned int &lenOut, int wsize, int step);
+        bool averagePolygon(float *in, unsigned int len, float **out, unsigned int &lenOut, unsigned int wsize, unsigned int step);
     }
 }
 #endif // UTIL_H

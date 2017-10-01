@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <algorithm>
 #include <cstring>
 #include <algorithm>
 
@@ -649,12 +650,15 @@ void util::avrPoint(float *in, unsigned int sIndex, float wsize, float &avrX, fl
 
     for(unsigned int i = 0; i < wsize; i++) {
         unsigned int index = (i + sIndex) * 2;
+//        Log()<<__FUNCTION__<<"      proc idx: "<<index<<"  x: "<<in [index]<<" y: "<<in [index + 1];
         avrX += in [index];
         avrY += in [index + 1];
     }
 
     avrX /= wsize;
     avrY /= wsize;
+
+//    Log()<<__FUNCTION__<<" x: "<<avrX<<" y: "<<avrY;
 }
 
 
@@ -663,43 +667,80 @@ void util::avrPointOnClosedContour(float *in, unsigned int len, unsigned int sIn
     avrX = avrY = 0;
 
     for(unsigned int i = 0; i < wsize; i++) {
-        unsigned int index = _idx((i + sIndex) * 2, len);
+
+        unsigned int index = _idx((i + sIndex), len) * 2;
+//        Log()<<__FUNCTION__<<"      proc idx: "<<index<<"  x: "<<in [index]<<" y: "<<in [index + 1];
         avrX +=  in [index];
         avrY +=  in [index + 1];
     }
 
     avrX /= wsize;
     avrY /= wsize;
+
+//    Log()<<__FUNCTION__<<" x: "<<avrX<<" y: "<<avrY;
 }
 
-bool util::simplifyPoly(float *in, unsigned int len, float *out, unsigned int &lenOut, int wsize, int step)
+bool util::averagePolygon(float *in, unsigned int len, float **out, unsigned int &lenOut, unsigned int wsize, unsigned int step)
 {
-    if (step < 2)
+//    Log()<<__FUNCTION__<<" in.len: "<<len<<" wsize: "<<wsize<<" step: "<<step;
+
+    if (step == 0)
         return false;
     if (wsize >= len)
         return false;
 
     std::vector<float> outVec;
 
-    int ei = len - wsize;
+    unsigned int ei = len - wsize;
 
-    for(unsigned int i = 0; i < ei; i+= step) {
+    float prevX, prevY;
 
-        float accX = 0;
-        float accY = 0;
-        for (unsigned int j = 0; j < wsize; j++) {
-            unsigned int index = (i + j) * 2;
-            accX += in[index];
-            accY += in[index+1];
-        }
-        accX /= wsize;
-        accY /= wsize;
+    avrPoint(in, 0, wsize, prevX, prevY);
 
+    outVec.push_back(prevX);
+    outVec.push_back(prevY);
 
-        outVec.push_back(accX);
-        outVec.push_back(accY);
+    for(unsigned int i = 1; i < ei; i+= step) {
+        float x, y;
 
+//        Log()<<__FUNCTION__<<" i: "<<i;
+
+        avrPoint(in, i, wsize, x, y);
+
+        prevX = x;
+        prevY = y;
+
+        outVec.push_back(x);
+        outVec.push_back(y);
     }
 
+    for(unsigned int i = ei; i < len; i+= step) {
+        float x, y;
 
+//        Log()<<__FUNCTION__<<" i: "<<i;
+
+        avrPointOnClosedContour(in, len, i, wsize, x, y);
+
+        prevX = x;
+        prevY = y;
+
+        outVec.push_back(x);
+        outVec.push_back(y);
+    }
+
+    int os = outVec.size();
+
+//    Log()<<__FUNCTION__<<" output len: "<<os/2;
+
+    if (os < 6)
+        return false;
+
+    float *oa = new float[os];
+
+    float * p = oa;
+    for(int i = 0; i < os; i++ )
+        *p++ = outVec[i];
+    lenOut = os / 2;
+    *out = oa;
+    return true;
 }

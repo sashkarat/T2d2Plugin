@@ -598,6 +598,11 @@ void t2d2_colliderCashOffset(T2d2Hndl ccash, float offset)
     return _CAST_2COLLCASH(ccash)->offset(offset);
 }
 
+void t2d2_colliderCashAverage(T2d2Hndl ccash, unsigned int wsize, unsigned int step)
+{
+    return _CAST_2COLLCASH(ccash)->average(wsize, step);
+}
+
 float t2d2_colliderCashArea(T2d2Hndl ccash)
 {
     return _CAST_2COLLCASH(ccash)->area();
@@ -673,6 +678,7 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
 
 
 

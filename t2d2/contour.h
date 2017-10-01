@@ -103,6 +103,8 @@ public:
 
     static void makeClipperLibPath(ClipperLib::Path &path, SimpContourData &scd);
 
+    static void makeClipperLibPath(ClipperLib::Path &path, float *in, unsigned int len);
+
     void setClipperLibPath(ClipperLib::Path &path);
 
     static void saveToFile(Contour *c, std::ofstream &fs);

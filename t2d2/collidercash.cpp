@@ -61,7 +61,11 @@ void t2d2::ColliderCash::offset(float o)
     for(int i = 0; i < m_colliderNum; i++) {
         ColliderData &cd = m_data[i];
         ClipperLib::Path p;
-        cd.m_contour->makeClipperLibPath(p);
+        if (cd.isFixed()) {
+            Contour::makeClipperLibPath(p, cd.m_fixed->m_points, cd.m_fixed->m_len);
+        } else {
+            cd.m_contour->makeClipperLibPath(p);
+        }
         clipper.AddPath(p, ClipperLib::jtMiter, ClipperLib::etClosedPolygon);
     }
 
@@ -70,6 +74,27 @@ void t2d2::ColliderCash::offset(float o)
     clipper.Execute(pt, o * FLOAT2CLINT);
 
     rebuildFromClipperPolyTree(pt);
+}
+
+void t2d2::ColliderCash::average(unsigned int wsize, unsigned int step)
+{
+    for (int i = 0; i < m_colliderNum; i++) {
+        ColliderData &cd = m_data[i];
+        if (!cd.isFixed())
+            cd.makeFixed();
+
+        FixedColliderData *fxd = cd.m_fixed;
+
+        float *newPoints;
+        unsigned int newLen;
+
+        bool res = t2d2::util::averagePolygon(fxd->m_points, fxd->m_len,
+                                              &newPoints, newLen,
+                                              wsize, step);
+        if (!res)
+            continue;
+        cd.setAsFixed(newPoints, newLen);
+    }
 }
 
 t2d2::ColliderCash::~ColliderCash()
@@ -124,6 +149,11 @@ void t2d2::ColliderCash::ColliderData::getPoints(float *out)
     m_contour->getValue2d(0, m_contour->length(), out);
 }
 
+bool t2d2::ColliderCash::ColliderData::isFixed()
+{
+    return m_fixed != nullptr;
+}
+
 void t2d2::ColliderCash::ColliderData::makeFixed()
 {
     if (m_fixed)
@@ -146,6 +176,16 @@ void t2d2::ColliderCash::ColliderData::makeFixed(ClipperLib::Path &path)
         ClipperLib::IntPoint &p = path[i];
         m_fixed->set(i, p.X * CLINT2FLOAT, p.Y * CLINT2FLOAT);
     }
+}
+
+void t2d2::ColliderCash::ColliderData::setAsFixed(float *points, float len)
+{
+    if (m_fixed)
+        delete m_fixed;
+    m_fixed = new FixedColliderData(0);
+
+    m_fixed->m_points = points;
+    m_fixed->m_len = len;
 }
 
 t2d2::ColliderCash::FixedColliderData::FixedColliderData(unsigned int size)

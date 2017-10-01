@@ -72,6 +72,19 @@ void Contour::makeClipperLibPath(ClipperLib::Path &path, t2d2::SimpContourData &
     }
 }
 
+void Contour::makeClipperLibPath(ClipperLib::Path &path, float *in, unsigned int len)
+{
+    for(int i = 0; i < len; i++) {
+        int idx = i*2;
+        float x = in[idx] * FLOAT2CLINT;
+        float y = in[idx+1] * FLOAT2CLINT;
+
+        path.push_back( ClipperLib::IntPoint(
+                            static_cast<ClipperLib::cInt>(x),
+                            static_cast<ClipperLib::cInt>(y)));
+    }
+}
+
 void Contour::setClipperLibPath(ClipperLib::Path &path)
 {
     size_t pc = path.size();

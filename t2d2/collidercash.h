@@ -44,9 +44,13 @@ protected:
 
         void getPoints(float *out);
 
+        bool isFixed();
+
         void makeFixed();
 
         void makeFixed(ClipperLib::Path &path);
+
+        void setAsFixed(float *points, float len);
     };
 
 
@@ -69,6 +73,8 @@ public:
     void makeFixed();
 
     void offset(float o);
+
+    void average(unsigned int wsize, unsigned int step);
 
     ~ColliderCash();
 
