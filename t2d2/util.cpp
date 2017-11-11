@@ -109,15 +109,9 @@ public:
     }
 };
 
-inline float triOrient (const _Point &p0, const _Point &p1, const _Point &p2)
-{
-    return (p1.x() - p0.x()) * (p2.y() - p0.y()) - (p2.x() - p0.x()) * (p1.y() - p0.y());
-}
-
-
 inline int orientation(const _Point &p0, const _Point &p1, const _Point &p2)
 {
-    float v = triOrient (p0, p1, p2);
+    float v = t2d2::util::orient(p0.x(), p0.y(), p1.x(), p1.y(), p2.x(), p2.y());
     return t2d2::util::almostEqual2sComplement(v, 0, 1) ? 0 : ((v > 0) ? 1 : 2);
 }
 
@@ -443,8 +437,14 @@ bool util::hasContourEdgeSelfIntersection(t2d2::Contour *contour)
             _Point pc((*contour)[is]);
             _Point pd((*contour)[is + 1]);
 
-            if (isIntersection (pa, pb, pc, pd))
+            if (isIntersection (pa, pb, pc, pd)) {
+                Log()<<__FUNCTION__<<"Contour self intersection detected. Size: "<<l;
+
+                Log()<<__FUNCTION__<<"pa"<<pa.x()<<pa.y()<<"  pb"<<pb.x()<<pb.y()<<"  indices:"<<i<<i+1;
+                Log()<<__FUNCTION__<<"pc"<<pc.x()<<pc.y()<<"  pd"<<pd.x()<<pd.y()<<"  indices:"<<is<<is+1;
+
                 return true;
+            }
 
             is = _index(is + 1, l);
         }
@@ -615,7 +615,13 @@ void util::getAveargePoint(float *contour, int length, int stride, float *outX, 
     *outY = sy / length;
 }
 
-float util::triaArea(Point *pA, Point *pB, Point *pC)
+
+float util::triOrient(Point *pA, Point *pB, Point *pC)
+{
+    return orient(pA->x, pA->y, pB->x, pB->y, pC->x, pC->y);
+}
+
+float util::triArea(Point *pA, Point *pB, Point *pC)
 {
     float xa = pB->x - pA->x;
     float ya = pB->y - pA->y;
@@ -644,7 +650,7 @@ void util::triMidPoint(Point *pA, Point *pB, Point *pC, float *outX, float *outY
 }
 
 
-void util::avrPoint(float *in, unsigned int sIndex, float wsize, float &avrX, float &avrY)
+void util::avrPoint(float *in, unsigned int sIndex, unsigned int wsize, float &avrX, float &avrY)
 {
     avrX = avrY = 0;
 
@@ -662,7 +668,7 @@ void util::avrPoint(float *in, unsigned int sIndex, float wsize, float &avrX, fl
 }
 
 
-void util::avrPointOnClosedContour(float *in, unsigned int len, unsigned int sIndex, float wsize, float &avrX, float &avrY)
+void util::avrPointOnClosedContour(float *in, unsigned int len, unsigned int sIndex, unsigned int wsize, float &avrX, float &avrY)
 {
     avrX = avrY = 0;
 
@@ -744,3 +750,168 @@ bool util::averagePolygon(float *in, unsigned int len, float **out, unsigned int
     *out = oa;
     return true;
 }
+
+void util::cl::normal(ClipperLib::IntPoint &p0, ClipperLib::IntPoint &p1, float &nx, float &ny)
+{
+    if(p1.X == p0.X && p1.Y == p0.Y) {
+        nx = ny = 0.0f;
+    }
+    float dx = static_cast<float>(p1.X - p0.X);
+    float dy = static_cast<float>(p1.Y - p0.Y);
+    float f = 1 * 1.0f/ sqrtf (dx*dx + dy*dy);
+    dx *= f;
+    dy *= f;
+
+    nx = dy;
+    ny = -dx;
+}
+
+void util::cl::normalOffsetP0(ClipperLib::IntPoint &p0, ClipperLib::IntPoint &p1, float delta, ClipperLib::IntPoint &out)
+{
+    float nx, ny;
+    util::cl::normal(p0, p1, nx, ny);
+    out.X = p0.X + static_cast<ClipperLib::cInt>(roundf(nx * delta));
+    out.Y = p0.Y + static_cast<ClipperLib::cInt>(roundf(ny * delta));
+
+}
+
+void util::cl::normalOffsetP1(ClipperLib::IntPoint &p0, ClipperLib::IntPoint &p1, float delta, ClipperLib::IntPoint &out)
+{
+    float nx, ny;
+    util::cl::normal(p0, p1, nx, ny);
+    out.X = p1.X + static_cast<ClipperLib::cInt>(roundf(nx * delta));
+    out.Y = p1.Y + static_cast<ClipperLib::cInt>(roundf(ny * delta));
+}
+
+void util::cl::miter(ClipperLib::IntPoint &pp, ClipperLib::IntPoint &p, ClipperLib::IntPoint &np, float delta, ClipperLib::IntPoint &outMiter)
+{
+    float nx0;
+    float ny0;
+
+    float nx1;
+    float ny1;
+
+    util::cl::normal(pp, p, nx0, ny0);
+    util::cl::normal(p, np, nx1, ny1);
+
+    float r = 1.0f + (nx0 * nx1 + ny0 * ny1);
+    float q =  delta / r;
+
+    outMiter.X = static_cast<ClipperLib::cInt>(roundf((nx0 + nx1) * q));
+    outMiter.Y = static_cast<ClipperLib::cInt>(roundf((ny0 + ny1) * q));
+}
+
+void util::cl::offsetPoint(ClipperLib::Path &path, size_t index, bool open, float delta, ClipperLib::IntPoint &out)
+{
+    size_t ps = path.size();
+
+    if (ps < 2)
+        return;
+
+    if (index == 0) {
+        if (open) {
+            util::cl::normalOffsetP0(path[0], path[1], delta, out);
+        } else {
+            util::cl::miter(path[ps-1], path[0], path[1], delta, out);
+        }
+    } else if (index == ps-1) {
+        if (open) {
+            util::cl::normalOffsetP1(path[ps-2], path[ps-1], delta, out);
+        } else {
+            util::cl::miter(path[ps-2], path[ps-1], path[0], delta, out);
+        }
+    } else {
+        util::cl::miter(path[index-1], path[index], path[index+1], delta, out);
+    }
+}
+
+void util::cl::findNearest(ClipperLib::Path &path, ClipperLib::Path &targets, float distTolerance, std::vector<int> &out)
+{
+    distTolerance *= distTolerance;
+
+    size_t ts = targets.size();
+
+    out.clear();
+    out.resize(ts);
+    std::vector<float> minDst;
+    minDst.reserve(ts);
+
+    for(size_t i = 0; i < ts; i++) {
+        out[i] = -1;
+        minDst[i] = distTolerance;
+    }
+
+    size_t ps = path.size();
+
+    for(size_t i = 0; i < ps; i++) {
+        ClipperLib::IntPoint &p = path[i];
+        for(size_t t = 0; t < ts; t++) {
+            ClipperLib::IntPoint &cp = targets[t];
+            float md = util::cl::dist2(cp, p);
+            if( md <= minDst[t]) {
+                minDst[t] = md;
+                out[t] = i;
+            }
+        }
+    }
+}
+
+float util::dist2(Point *pA, Point *pB)
+{
+    float dx = pB->x - pA->x;
+    float dy = pB->y - pA->y;
+    return dx * dx + dy * dy;
+}
+
+float util::dist(Point *pA, Point *pB)
+{
+    float dx = pB->x - pA->x;
+    float dy = pB->y - pA->y;
+    return  sqrtf(dx * dx + dy * dy);
+}
+
+int util::cl::findNearest(ClipperLib::Path &path, ClipperLib::IntPoint &target, float distTolerance)
+{
+    int res = -1;
+
+    distTolerance *= distTolerance;
+    float minDst = distTolerance;
+
+    size_t ps = path.size();
+
+    for(size_t i = 0; i < ps; i++) {
+        ClipperLib::IntPoint &p = path[i];
+        float md = util::cl::dist2(target, p);
+        if( md <= minDst) {
+            minDst = md;
+            res = i;
+        }
+    }
+
+    return res;
+}
+
+#ifndef ANDROID
+
+void util::cl::savePath(ClipperLib::Path &p, const std::string &fileName)
+{
+    std::ofstream fs;
+    fs.open(fileName.c_str(), std::ios::out | std::ios::trunc);
+
+    if (!fs.is_open()) {
+        Log(ltError)<<"unable to open:"<<fileName;
+        return;
+    }
+
+    fs<<p.size()<<std::endl;
+
+    for(size_t i = 0; i < p.size(); i++) {
+        ClipperLib::IntPoint &pnt = p[i];
+        fs<<pnt.X<<" "<<pnt.Y<<std::endl;
+    }
+
+    fs.close();
+}
+
+#endif
+

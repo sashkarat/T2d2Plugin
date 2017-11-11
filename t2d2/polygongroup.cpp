@@ -357,6 +357,31 @@ bool PolygonGroup::slice(Polygon *poly, int gridSize)
     return false;
 }
 
+bool PolygonGroup::generateBorders()
+{
+    bool accRes = false;
+
+    Polygon *poly = m_polygon;
+
+    std::vector<Polygon*> newPoly;
+
+    while (poly != nullptr) {
+        if (poly->genBorders()) {
+            accRes = accRes || poly->generateBorders(newPoly);
+            poly->setGenBorders(false);
+        }
+        poly = poly->m_next;
+    }
+
+//    Log()<<__FUNCTION__<<"new poly number"<<newPoly.size();
+//    for(size_t i = 0; i < newPoly.size(); i++)
+//        newPoly[i]->complicate(4);
+
+    addPolygons(newPoly);
+
+    return accRes;
+}
+
 void PolygonGroup::deletePolygons()
 {
     while (m_polygon != 0) {
@@ -378,6 +403,7 @@ bool PolygonGroup::clipBy(t2d2::SimpPolyData *spd)
 
     while (poly != 0) {
         if (!poly->clippingSubj()) {
+//            Log()<<__FUNCTION__<<"not a subject";
             poly = poly->next();
             continue;
         }

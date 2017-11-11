@@ -50,7 +50,7 @@ void t2d2::ColliderCash::build()
 
 void t2d2::ColliderCash::makeFixed()
 {
-    for (int i =0; i < m_colliderNum; i++)
+    for (unsigned int i =0; i < m_colliderNum; i++)
         m_data[i].makeFixed();
 }
 
@@ -58,7 +58,7 @@ void t2d2::ColliderCash::offset(float o)
 {
     ClipperLib::ClipperOffset clipper ;
 
-    for(int i = 0; i < m_colliderNum; i++) {
+    for(unsigned int i = 0; i < m_colliderNum; i++) {
         ColliderData &cd = m_data[i];
         ClipperLib::Path p;
         if (cd.isFixed()) {
@@ -78,7 +78,7 @@ void t2d2::ColliderCash::offset(float o)
 
 void t2d2::ColliderCash::average(unsigned int wsize, unsigned int step)
 {
-    for (int i = 0; i < m_colliderNum; i++) {
+    for (unsigned int i = 0; i < m_colliderNum; i++) {
         ColliderData &cd = m_data[i];
         if (!cd.isFixed())
             cd.makeFixed();
@@ -178,7 +178,7 @@ void t2d2::ColliderCash::ColliderData::makeFixed(ClipperLib::Path &path)
     }
 }
 
-void t2d2::ColliderCash::ColliderData::setAsFixed(float *points, float len)
+void t2d2::ColliderCash::ColliderData::setAsFixed(float *points, unsigned int len)
 {
     if (m_fixed)
         delete m_fixed;

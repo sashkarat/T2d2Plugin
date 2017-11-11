@@ -1,8 +1,12 @@
 #ifndef T2D2LOG_H
 #define T2D2LOG_H
 #include <iostream>
+#include <string>
 #include <sstream>
 #include <fstream>
+
+#include "clipperlib_f/clipper.hpp"
+#include "t2d2.h"
 
 namespace t2d2 {
 
@@ -14,6 +18,8 @@ enum LogType {
     ltError     = 2
 };
 
+
+class Point;
 
 class Log
 {
@@ -37,6 +43,15 @@ public:
 #ifndef ANDROID
     static void setLogFile(const char *logFileName, bool trunc);
 #endif
+
+    static void logClipperPath(const std::string &funcName, const std::string &tag, ClipperLib::Path &p);
+
+    Log &operator<<(const ClipperLib::IntPoint &p) {
+        *this<<"X"<<p.X<<"Y"<<p.Y;
+        return *this;
+    }
+
+    Log &operator <<(const t2d2::Point &p);
 
 private:
     static LogCallback ms_logCallback;

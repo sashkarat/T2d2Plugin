@@ -15,12 +15,10 @@ void t2d2::UvProjection::setMatrix4x4(float *data)
 //    Log()<<__FUNCTION__<<"<1>"<<m_mtx[1]<<"<5>"<<m_mtx[5]<<"<9>"<<m_mtx[9]<<"<13>"<<m_mtx[13];
 }
 
-void t2d2::UvProjection::computeUV(t2d2::Point *p, float &u, float &v)
+void t2d2::UvProjection::computeUV(t2d2::Point *p)
 {
-    u = m_mtx[0] * p->x + m_mtx[4] * p->y + m_mtx[8] + m_mtx[12];
-    v = m_mtx[1] * p->x + m_mtx[5] * p->y + m_mtx[9] + m_mtx[13];
-
-
+    p->m_u = m_mtx[0] * p->x + m_mtx[4] * p->y + m_mtx[8] + m_mtx[12];
+    p->m_v = m_mtx[1] * p->x + m_mtx[5] * p->y + m_mtx[9] + m_mtx[13];
 }
 
 void t2d2::UvProjection::copy(t2d2::UvProjection *d, t2d2::UvProjection *s)

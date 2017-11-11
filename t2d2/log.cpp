@@ -80,4 +80,17 @@ void Log::setLogFile(const char *logFileName, bool trunc)
 
     m_logFs<<"\r\nLog opened: "<<ctime(&t)<<"\r\n";
 }
+
+void Log::logClipperPath(const std::string &funcName, const std::string &tag, ClipperLib::Path &p)
+{
+    size_t ps = p.size();
+    for(size_t i = 0; i < ps; i++)
+        Log()<<funcName<<tag<<i<<"X"<<p[i].X<<"Y"<<p[i].Y;
+}
+
+Log &Log::operator <<(const t2d2::Point &p)
+{
+    *this<<"("<<p.x<<":"<<p.y<<")["<<p.m_u<<":"<<p.m_v<<"]";
+    return *this;
+}
 #endif

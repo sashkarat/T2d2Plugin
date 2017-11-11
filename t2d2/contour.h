@@ -14,6 +14,7 @@ namespace t2d2 {
 
 class SimpContourData;
 class Point;
+class UvProjection;
 class BBox;
 class PolygonGroup;
 class Polygon;
@@ -32,12 +33,12 @@ class Contour
     friend class Polygon;
     friend class PolygonGroup;
     friend class GridIndexator;
-protected:
 
+protected:
     Polygon*                    m_poly;
     BBox*                       m_bbox;
     std::vector<p2t::Point*>    m_data;
-    bool                        m_isContour;
+    bool                        m_isOutline;
     int                         m_cashOffset;
     bool                        m_valid;
 
@@ -51,7 +52,7 @@ protected:
 public:
 
 
-    Contour(Polygon *poly, bool isContour = false);
+    Contour(Polygon *poly, bool isOutline = false);
     ~Contour();
 
     inline void closeContour();
@@ -61,18 +62,25 @@ public:
     void clearTriDataRef();
 
     unsigned int    length();
-    t2d2::Point*    getPoint(unsigned int index);
+    t2d2::Point*    getPoint(size_t index);
     bool            remove(unsigned int startIndex, unsigned int count);
 
     unsigned int    getValue(unsigned int startIndex, unsigned int length, float* out, unsigned int stride, bool fillByZValue);
     unsigned int    getValue2d(unsigned int startIndex, unsigned int length, float* out);
     unsigned int    getValue3d(unsigned int startIndex, unsigned int length, float* out);
+    unsigned int    getUV(unsigned int startIndex, unsigned int length, float* out);
+
     unsigned int    setValue(unsigned int startIndex, float *in, unsigned int length, int stride);
     unsigned int    setValue2d(unsigned int startIndex, float *in, unsigned int length);
     unsigned int    setValue3d(unsigned int startIndex, float *in, unsigned int length);
+    unsigned int    setUV(unsigned int startIndex, float *in, unsigned int length);
+
     unsigned int    addValue(float *in, unsigned int length, unsigned int stride);
     unsigned int    addValue2d(float *in, unsigned int length);
     unsigned int    addValue3d(float *in, unsigned int length);
+
+
+    void    projectUV(UvProjection *prj);
 
     float   updateArea();
     void    updateCOM();
@@ -81,13 +89,6 @@ public:
 
     void setBorderFlags(int startIndex, int *flags, int length);
     void getBorderFlags(int startIndex, int length, int *out);
-
-    void updatePointPositions();
-    void updateBorderGeometry();
-    void getNormals(unsigned int startIndex, int length, float *out);
-    void getMiters(unsigned int startIndex, int length, float *out);
-    void getDotPrValues(unsigned int startIndex, int length, float *out);
-    void getPositions(unsigned int startIndex, int length, float *out);
 
     int getCashOffset() const;
     void setCashOffset(int cashOffset);
@@ -99,27 +100,22 @@ public:
     p2t::Point * operator[] (int index);
     BBox *bbox() const;
 
+
+    void complicate(int level);
+
     void makeClipperLibPath(ClipperLib::Path &path);
+
+    void setClipperLibPath(ClipperLib::Path &path);
 
     static void makeClipperLibPath(ClipperLib::Path &path, SimpContourData &scd);
 
     static void makeClipperLibPath(ClipperLib::Path &path, float *in, unsigned int len);
 
-    void setClipperLibPath(ClipperLib::Path &path);
-
     static void saveToFile(Contour *c, std::ofstream &fs);
 
     static void loadFromFile(Contour *c, std::ifstream &fs);
 
-    static int restorePointAttributes(Contour *dst, GridIndexator *indexator);
-
-    static void rebuildPointAttributes(Contour *cntr, int lastPrevGenIdx);
-
-    static void calcNormal(Point *p);
-
-    static void calcMiter(Point *p);
-
-    static void calcPointPosition(t2d2::Point *p);
+    static void restorePointAttributes(Contour *dst, Polygon *basePoly);
 };
 
 }

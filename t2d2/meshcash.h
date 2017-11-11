@@ -79,10 +79,6 @@ protected:
 
     void allocVertices (Polygon * poly);
 
-    void allocBorderData();
-
-    void allocContourBorderData(Contour *cntr, int mask, Border *brdr);
-
     void allocTriangles (Polygon * poly);
 
     void allocContour (Contour * contour);
@@ -92,18 +88,6 @@ protected:
     void setVertices (Contour * contour);
 
     void setTriangles (Polygon * poly);
-
-    void setBorderData();
-
-    void setContourBorderData(Contour *cntr, int mask, Border *brdr);
-
-    void setContourBorderSegmentData(t2d2::Point *p0, t2d2::Point *p1, bool prevState, float zValue, Border *brdr);
-
-    void setBorderVertex(int idx, t2d2::Point *p, float z, float offset, float v, Border *brdr);
-
-    void setBorderSegmentMidVertices(int p0_idx, int p1_idx, int p2_idx, int p3_idx, int io, Border *brdr);
-
-    void setBorderSegmentTriangle(int idxA, int idxB, int idxC, int smi);
 };
 
 

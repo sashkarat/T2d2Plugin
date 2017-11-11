@@ -74,6 +74,7 @@ enum PolyType { ptSubject, ptClip };
 //Others rules include Positive, Negative and ABS_GTR_EQ_TWO (only in OpenGL)
 //see http://glprogramming.com/red/chapter11.html
 enum PolyFillType { pftEvenOdd, pftNonZero, pftPositive, pftNegative };
+enum NodeType {ntAny, ntOpen, ntClosed};
 
 #ifdef use_int32
   typedef int cInt;
@@ -143,7 +144,7 @@ class PolyNode
 { 
 public:
     PolyNode();
-    virtual ~PolyNode(){};
+    virtual ~PolyNode(){}
     Path Contour;
     PolyNodes Childs;
     PolyNode* Parent;
@@ -166,7 +167,7 @@ private:
 class PolyTree: public PolyNode
 { 
 public:
-    ~PolyTree(){ Clear(); };
+    ~PolyTree(){ Clear(); }
     PolyNode* GetFirst() const;
     void Clear();
     int Total() const;
@@ -193,6 +194,7 @@ void MinkowskiSum(const Path& pattern, const Path& path, Paths& solution, bool p
 void MinkowskiSum(const Path& pattern, const Paths& paths, Paths& solution, bool pathIsClosed);
 void MinkowskiDiff(const Path& poly1, const Path& poly2, Paths& solution);
 
+void AddPolyNodeToPaths(const PolyNode& polynode, NodeType nodetype, Paths& paths);
 void PolyTreeToPaths(const PolyTree& polytree, Paths& paths);
 void ClosedPathsFromPolyTree(const PolyTree& polytree, Paths& paths);
 void OpenPathsFromPolyTree(PolyTree& polytree, Paths& paths);

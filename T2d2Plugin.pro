@@ -45,7 +45,9 @@ SOURCES += \
     t2d2/meshcash.cpp \
     t2d2/simpledata.cpp \
     t2d2/util.cpp \
-    t2d2/collidercash.cpp
+    t2d2/collidercash.cpp \
+    t2d2/uvpathprojecton.cpp \
+    t2d2/triangle.cpp
 
 HEADERS += \
     clipperlib_f/clipper.hpp \
@@ -70,7 +72,9 @@ HEADERS += \
     t2d2/border.h \
     t2d2/meshcash.h \
     t2d2/util.h \
-    t2d2/collidercash.h
+    t2d2/collidercash.h \
+    t2d2/uvpathprojecton.h \
+    t2d2/triangle.h
 
 android {
     #message(ANDROID SPEC)

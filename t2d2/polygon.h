@@ -12,11 +12,14 @@ namespace t2d2 {
 class SimpPolyData;
 class SimpContourData;
 class Point;
+class Triangle;
+class Border;
 class BBox;
 class GridIndexator;
 class Contour;
 class PolygonGroup;
 class UvProjection;
+class UvPathProjecton;
 
 
 typedef t2d2::Point*                    PointPtr;
@@ -29,9 +32,17 @@ class Polygon
 {
     friend class PolygonGroup;
 
-public:
-    struct Triangle {
-        PointPtr points [3];
+    class BorderClipperData {
+    public:
+        Border *m_border;
+        ClipperLib::Path m_contour;
+        int m_indices[4];
+        BorderClipperData(Border *b) : m_border(b) { m_indices[0] = m_indices[1] = m_indices[2] = m_indices[3] = -1; }
+
+        inline int &oS() {return m_indices[0];}
+        inline int &oE() {return m_indices[1];}
+        inline int &wS() {return m_indices[2];}
+        inline int &wE() {return m_indices[3];}
     };
 
 protected:
@@ -69,6 +80,8 @@ protected:
     Polygon *m_prev;
     Polygon *m_next;
 
+    bool                m_skipValidation;
+
 public:
 
     Polygon(PolygonGroup *pg);
@@ -88,11 +101,11 @@ public:
     inline GridIndexator * indexator() {return m_indexator;}
 
     unsigned int triNumber();
-    Polygon::Triangle*  tri(int index);
+    Triangle*  tri(int index);
 
     bool validate       (bool withHoles);
     void markValid();
-    void triangulate    ();
+    void triangulate    (bool force, bool ignoreValidation);
     void deleteTriangles();
 
     float            zValue()                   {return m_zValue;}
@@ -103,11 +116,13 @@ public:
 
     void updateBBox();
     void updateIndexator(int gridSize);
-    void updateBorderGeometry();
 
     BBox *bbox();
 
+    void            createUvProjection(float *matrix);
     UvProjection*   getUvProjection() {return m_uvProjection;}
+
+    void  projectUV();
 
     bool isValid() const;
 
@@ -147,6 +162,10 @@ public:
 
     static t2d2::SimpPolyData *createSimpPolyData(Polygon *poly, float *trMtx);
 
+    bool generateBorders(std::vector<Polygon *> & outBordersPoly);
+
+    void complicate(int level);
+
 protected:
 
     void insertNext(Polygon *p);
@@ -163,6 +182,24 @@ protected:
     static void addClipToClipper(ClipperLib::Clipper &clipper, t2d2::SimpPolyData *spd);
     static void buildPolyVecFromClipperTree(ClipperLib::PolyTree &tree, t2d2::Polygon *basePoly, std::vector<t2d2::Polygon*> &outVec);
     static void copyPolyAttributes(Polygon* dp, Polygon *sp);
+
+    bool generateBordersAtContour(Border *b, unsigned int bmask, Contour *cntr,  float holeFactor, std::vector<Polygon *> &outBordersPoly);
+
+    void generateZeroClipPath(ClipperLib::IntPoint &zO, ClipperLib::IntPoint &zW, bool holeFactor, ClipperLib::Path &zpCtrlPoints, ClipperLib::Path &zClPath);
+    ClipperLib::IntPoint localizeZeroPoint(ClipperLib::Path &path, int zIndex, ClipperLib::IntPoint &zp2);
+    ClipperLib::IntPoint offsetZeroPoint(ClipperLib::IntPoint &p0, ClipperLib::IntPoint &p1, float cosA);
+    void generateFullBorder (ClipperLib::Path &path, float wDelta, float oDelta, ClipperLib::IntPoint &zeroPoint, BorderClipperData &bcd);
+    void generateFullBorder (ClipperLib::Path &path, float wDelta, float oDelta, ClipperLib::Path &zpCtrlPoints, ClipperLib::Path &zpClPath, BorderClipperData &bcd);
+    int generateBorderSegment(ClipperLib::Path &p, float midDelta, float halfDelta, BorderClipperData &bcd);
+    void sliceBcd(BorderClipperData &bcd, ClipperLib::Path &zpCtrlPoints, ClipperLib::Path &zpClPath, BorderClipperData &bcdA, BorderClipperData &bcdB);
+
+
+    void cleanupBCD(BorderClipperData &bcd);
+    void buildPolyFromBCD(BorderClipperData &bcd, UvPathProjecton &uvp, bool isHole, std::vector<Polygon *> &outPoly);
+
+
+    void generateUvPathProjData(UvPathProjecton &uvpd, Contour *cntr, float delta);
+    void generateUvPathProjection(UvPathProjecton &uvp, BorderClipperData &bcd, Contour *cntr, bool isHole);
 };
 
 }

@@ -200,6 +200,11 @@ bool t2d2_polygonGroupSlicePoly(T2d2Hndl pg, T2d2Hndl poly, int gridSize)
     return _CAST_2POLY_G(pg)->slice(_CAST_2POLY(poly), gridSize);
 }
 
+bool t2d2_polygonGroupGenerateBorders(T2d2Hndl pg)
+{
+    return _CAST_2POLY_G(pg)->generateBorders();
+}
+
 //===============================================================
 
 T2d2Hndl t2d2_polygonGetNext(T2d2Hndl poly)
@@ -264,14 +269,16 @@ void t2d2_polygonUpdateIndexator(T2d2Hndl poly, int gridSize)
     _CAST_2POLY(poly)->updateIndexator (gridSize);
 }
 
-void t2d2_polygonUpdateBorderGeometry(T2d2Hndl poly)
+void t2d2_polygonSetUvProjectionMatrix4x4(T2d2Hndl poly, float *data, bool applyProjection)
 {
-    _CAST_2POLY(poly)->updateBorderGeometry();
+    _CAST_2POLY(poly)->createUvProjection(data);
+    if (applyProjection)
+        _CAST_2POLY(poly)->projectUV();
 }
 
-void t2d2_polygonSetUvProjectionMatrix4x4(T2d2Hndl poly, float *data)
+void t2d2_polygonProjectUV(T2d2Hndl poly)
 {
-    _CAST_2POLY(poly)->getUvProjection()->setMatrix4x4(data);
+    _CAST_2POLY(poly)->projectUV();
 }
 
 
@@ -377,6 +384,11 @@ unsigned int t2d2_contourGetValue3d(T2d2Hndl cntr, unsigned int startIndex, unsi
     return _CAST_2CONTOUR(cntr)->getValue3d(startIndex, length, out);
 }
 
+unsigned int t2d2_contourGetUV(T2d2Hndl cntr, unsigned int startIndex, unsigned int length, float *out)
+{
+    return _CAST_2CONTOUR(cntr)->getUV(startIndex, length, out);
+}
+
 unsigned int t2d2_contourSetValue(T2d2Hndl cntr, unsigned int startIndex, float *in, unsigned int length, int stride)
 {
     return _CAST_2CONTOUR(cntr)->setValue(startIndex, in, length, stride);
@@ -390,6 +402,11 @@ unsigned int t2d2_contourSetValue2d(T2d2Hndl cntr, unsigned int startIndex, floa
 unsigned int t2d2_contourSetValue3d(T2d2Hndl cntr, unsigned int startIndex, float *in, unsigned int length)
 {
     return _CAST_2CONTOUR(cntr)->setValue3d(startIndex, in, length);
+}
+
+unsigned int t2d2_contourSetUV(T2d2Hndl cntr, unsigned int startIndex, float *in, unsigned int length)
+{
+    return _CAST_2CONTOUR(cntr)->setUV(startIndex, in, length);
 }
 
 bool t2d2_contourRemove(T2d2Hndl cntr, int startIndex, int count)
@@ -420,26 +437,6 @@ void t2d2_contourSetBorderFlags(T2d2Hndl cntr, int startIndex, int *flags, int l
 void t2d2_contourGetBorderFlags(T2d2Hndl cntr, int startIndex, int length, int *out)
 {
     _CAST_2CONTOUR(cntr)->getBorderFlags(startIndex, length, out);
-}
-
-void t2d2_contourUpdateBorderGeometry(T2d2Hndl cntr)
-{
-    _CAST_2CONTOUR(cntr)->updateBorderGeometry();
-}
-
-void t2d2_contourGetNormals(T2d2Hndl cntr, int startIndex, int length, float *out)
-{
-    _CAST_2CONTOUR(cntr)->getNormals(startIndex, length, out);
-}
-
-void t2d2_contourGetMiters(T2d2Hndl cntr, int startIndex, int length, float *out)
-{
-    _CAST_2CONTOUR(cntr)->getMiters(startIndex, length, out);
-}
-
-void t2d2_contourGetDotPrValues(T2d2Hndl cntr, int startIndex, int length, float *out)
-{
-    _CAST_2CONTOUR(cntr)->getDotPrValues(startIndex, length, out);
 }
 
 void t2d2_contourUpdateArea(T2d2Hndl cntr)
@@ -678,6 +675,13 @@ void t2d2_utilAveragePoint(float *points, int length, int stride, float *outX, f
 {
     t2d2::util::getAveargePoint(points, length, stride, outX, outY);
 }
+
+
+
+
+
+
+
 
 
 

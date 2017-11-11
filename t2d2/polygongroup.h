@@ -49,8 +49,6 @@ public :
     void deleteColliderCash(ColliderCash * ccash);
 
 
-
-
     void updateColliderGeometricValues();
 
     inline float getColliderArea() const {return m_colliderArea;}
@@ -72,11 +70,13 @@ public :
 
     bool slice(Polygon *poly, int gridSize);
 
+    bool generateBorders();
+
+
 
 protected:
 
     void deletePolygons();
-
 
     bool clipBy(t2d2::SimpPolyData *spd);
 

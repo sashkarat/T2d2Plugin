@@ -50,7 +50,7 @@ protected:
 
         void makeFixed(ClipperLib::Path &path);
 
-        void setAsFixed(float *points, float len);
+        void setAsFixed(float *points, unsigned int len);
     };
 
 

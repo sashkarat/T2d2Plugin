@@ -21,7 +21,7 @@ Polygon *Contour::getPoly() const
 
 void Contour::validate()
 {
-    if (m_isContour)
+    if (m_isOutline)
         m_valid = !t2d2::util::hasContourEdgeSelfIntersection(this);
      else
         m_valid = t2d2::util::isHoleContourValid(this, m_poly->outline());
@@ -45,6 +45,81 @@ p2t::Point *Contour::operator[](int index)
 BBox *Contour::bbox() const
 {
     return m_bbox;
+}
+
+void Contour::complicate(int level)
+{
+    float maxd2 = -1e35f;
+
+    t2d2::Point *p = getPoint(0);
+    t2d2::Point *sp = p;
+
+    do {
+        float d2 = t2d2::util::dist2(p, p->m_np);
+        if (d2 > maxd2)
+            maxd2 = d2;
+        p = p->m_np;
+    } while (p != sp);
+
+    float delta = sqrtf(maxd2) / level;
+
+//    Log()<<__FUNCTION__<<"maxd2: "<<maxd2<<"delta"<<delta;
+
+    std::vector<p2t::Point*> ndata;
+
+    p = sp;
+    do {
+        ndata.push_back(p);
+
+        t2d2::Point *onp = p->m_np;
+
+        float d = t2d2::util::dist(p, onp);
+
+        int  cd =  static_cast<int>(d / delta);
+
+
+        if (cd > 1) {
+
+
+            float dlt = d / cd;
+
+            float du = (onp->m_u - p->m_u) / cd;
+            float dv = (onp->m_v - p->m_v) / cd;
+
+//            Log()<<__FUNCTION__<<"cd"<<cd<<"dlt"<<dlt;
+
+            for(int  i = 1; i < cd; i++) {
+                float dx = onp->x - p->x;
+                float dy = onp->y - p->y;
+
+                float nx = dx;
+                float ny = dy;
+
+                t2d2::util::fastnorm(nx, ny);
+
+                float deltaX = nx * dlt;
+                float deltaY = ny * dlt;
+
+                t2d2::Point *newp = new t2d2::Point(this, p);
+
+                newp->x = p->x + deltaX;
+                newp->y = p->y + deltaY;
+
+
+                newp->m_u = p->m_u + du;
+                newp->m_v = p->m_v + dv;
+
+                p = newp;
+
+                ndata.push_back(p);
+            }
+        }
+
+        p = p->m_np;
+    } while (p!= sp);
+
+    m_data.clear();
+    m_data.insert(m_data.begin(), ndata.begin(), ndata.end());
 }
 
 void Contour::makeClipperLibPath(ClipperLib::Path &path)
@@ -138,91 +213,33 @@ void Contour::loadFromFile(Contour *c, std::ifstream &fs)
     c->closeContour();
 }
 
-int Contour::restorePointAttributes(Contour *dst, GridIndexator *indexator)
+void Contour::restorePointAttributes(Contour *dst, Polygon *basePoly)
 {
+    GridIndexator *basePolyIndexator = basePoly->indexator();
+
+    Polygon *poly = dst->getPoly();
+    UvProjection *prj = poly->getUvProjection();
+
     size_t ds = dst->m_data.size();
-    int lastPrevGenIdx = -1;
 
     for(size_t i = 0; i < ds; i++) {
         t2d2::Point * dp = dynamic_cast<t2d2::Point*>(dst->m_data[i]);
-        t2d2::Point * sp = indexator->getPoint(dp);
+        t2d2::Point * sp = basePolyIndexator->getPoint(dp);
 
-        if (sp != 0 ) {
+        if (sp) {
             t2d2::Point::copyAttributes(dp, sp);
-            dp->setOF_Gen();
-            lastPrevGenIdx = static_cast<int>(i);
-//            Log()<<__FUNCTION__<<"OLD POINT: "<<dp->x<<" "<<dp->y;
+//            Log()<<__FUNCTION__<<"OLD POINT: "<<*dp<<" <- "<<*sp;
         } else {
-            //TODO: new attributes
-//            Log()<<__FUNCTION__<<"NEW POINT: "<<dp->x<<" "<<dp->y;
+
+            if (prj)
+                prj->computeUV(dp);
+            else
+               Triangle::computeUV(dp, basePoly->tri(0), basePoly->triNumber());
+
+//            Log()<<__FUNCTION__<<"NEW POINT: "<<*dp;
         }
+
     }
-    return lastPrevGenIdx;
-}
-
-void Contour::rebuildPointAttributes(Contour *cntr, int lastPrevGenIdx)
-{
-    if (cntr->m_data.size() == 0)
-        return;
-
-    t2d2::Point *p =  (lastPrevGenIdx < 0)?
-                dynamic_cast<t2d2::Point*>(cntr->m_data[0]) :
-        dynamic_cast<t2d2::Point*>(cntr->m_data[(lastPrevGenIdx)])->m_np;
-
-    t2d2::Point *ep = p;
-
-    do {
-        if (!p->of_Gen()) {
-            calcPointPosition(p);
-            calcNormal(p);
-            calcMiter(p);
-
-            if (p->m_pp->of_Gen())
-                p->m_borderFlags = p->m_pp->m_borderFlags;
-
-            if (p->m_np->of_Gen())
-                p->m_borderFlags = p->m_np->m_borderFlags;
-        }
-
-        p = p->m_np;
-    } while (ep != p);
-}
-
-void Contour::calcNormal(t2d2::Point *p)
-{
-    t2d2::Point *np = p->m_np;
-    float dx = np->x - p->x;
-    float dy = np->y - p->y;
-
-    p->m_normX = dy;
-    p->m_normY = -dx;
-
-    t2d2::util::fastnorm(p->m_normX, p->m_normY);
-}
-
-void Contour::calcMiter(t2d2::Point *p)
-{
-    t2d2::Point *pp = p->m_pp;
-    float nx0 = pp->m_normX;
-    float ny0 = pp->m_normY;
-
-    float nx1 = p->m_normX;
-    float ny1 = p->m_normY;
-
-    p->m_miterX = nx0 + nx1;
-    p->m_miterY = ny0 + ny1;
-
-    t2d2::util::fastnorm(p->m_miterX, p->m_miterY);
-
-    p->m_dotPr = t2d2::util::dot(p->m_miterX, p->m_miterY, pp->m_normX, pp->m_normY);
-}
-
-void Contour::calcPointPosition(t2d2::Point *p)
-{
-    t2d2::Point *pp = p->m_pp;
-    float dx = p->x - pp->x;
-    float dy = p->y - pp->y;
-    p->m_position = sqrtf(dx * dx + dy * dy) + pp->m_position;
 }
 
 void Contour::updateBBox()
@@ -233,9 +250,9 @@ void Contour::updateBBox()
         m_bbox->addPoint(dynamic_cast<t2d2::Point*>(m_data[i]));
 }
 
-Contour::Contour(Polygon *poly, bool isContour) :
+Contour::Contour(Polygon *poly, bool isOutline) :
     m_poly(poly),
-    m_isContour(isContour),
+    m_isOutline(isOutline),
     m_cashOffset(-1),
     m_valid(false),
     m_area(0.0f),
@@ -286,7 +303,8 @@ void Contour::clear()
 
 void Contour::clearTriDataRef()
 {
-    for(unsigned int j = 0; j< m_data.size(); j++)
+    size_t ds = m_data.size();
+    for(size_t j = 0; j< ds; j++)
         m_data[j]->edge_list.resize(0);
 }
 
@@ -295,7 +313,7 @@ unsigned int Contour::length()
     return static_cast<unsigned int>(m_data.size());
 }
 
-t2d2::Point *Contour::getPoint(unsigned int index)
+t2d2::Point *Contour::getPoint(size_t index)
 {
 //    if (index >= m_data.size()) {
 //        Log(ltWarning)<<__FUNCTION__<<"index out of range";
@@ -388,6 +406,29 @@ unsigned int Contour::getValue3d(unsigned int startIndex, unsigned int length, f
     return l;
 }
 
+unsigned int Contour::getUV(unsigned int startIndex, unsigned int length, float *out)
+{
+    unsigned int ds = static_cast<unsigned int>(m_data.size());
+
+    if ( startIndex >= ds) {
+        Log(ltWarning)<<__FUNCTION__<<"index out of range";
+        return 0;
+    }
+
+    if ((startIndex + length) > ds)
+        length = ds - startIndex;
+
+    unsigned int e = startIndex + length;
+
+    for(unsigned int i = startIndex; i < e; i++ ) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[i]);
+        out[0] = p->m_u;
+        out[1] = p->m_v;
+        out += 2;
+    }
+    return length;
+}
+
 unsigned int Contour::setValue(unsigned int startIndex, float *in, unsigned int length, int stride)
 {
     if ( startIndex >= m_data.size()) {
@@ -432,6 +473,29 @@ unsigned int Contour::setValue3d(unsigned int startIndex, float *in, unsigned in
     return setValue(startIndex, in, length, 3);
 }
 
+unsigned int Contour::setUV(unsigned int startIndex, float *in, unsigned int length)
+{
+    unsigned int ds = static_cast<unsigned int>(m_data.size());
+
+    if ( startIndex >= ds) {
+        Log(ltWarning)<<__FUNCTION__<<"index out of range";
+        return 0;
+    }
+
+    if ((startIndex + length) > ds)
+        length = ds - startIndex;
+
+    unsigned int e = startIndex + length;
+
+    for(unsigned int i = startIndex; i < e; i++ ) {
+        t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[i]);
+        p->m_u = in[0];
+        p->m_v = in[1];
+        in += 2;
+    }
+    return length;
+}
+
 unsigned int Contour::addValue(float *in, unsigned int length, unsigned int stride)
 {
     size_t ds = m_data.size();
@@ -461,6 +525,14 @@ unsigned int Contour::addValue2d(float *in, unsigned int length)
 unsigned int Contour::addValue3d(float *in, unsigned int length)
 {
     return addValue(in, length, 3);
+}
+
+void Contour::projectUV(UvProjection *prj)
+{
+    size_t c = m_data.size();
+
+    for(size_t i = 0; i < c; i++)
+        prj->computeUV(dynamic_cast<t2d2::Point*>(m_data[i]));
 }
 
 float Contour::updateArea()
@@ -580,74 +652,3 @@ void Contour::getBorderFlags(int startIndex, int length, int *out)
     for(int i = startIndex; i < e; i++)
         *flags++ = dynamic_cast<t2d2::Point*>(m_data[i])->m_borderFlags;
 }
-
-void Contour::updatePointPositions()
-{
-    t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[0]);
-    t2d2::Point *ep = p;
-
-    p->m_position = 0.0f;
-    p = p->m_np;
-
-    do {
-        calcPointPosition(p);
-        p = p->m_np;
-    } while (ep != p);
-}
-
-void Contour::updateBorderGeometry()
-{
-    t2d2::Point *p = dynamic_cast<t2d2::Point*>(m_data[0]);
-    t2d2::Point *ep = p;
-
-    calcNormal(p->m_pp);
-
-    do {
-        calcNormal(p);
-        calcMiter(p);
-
-        p = p->m_np;
-    } while (ep != p);
-
-    updatePointPositions();
-}
-
-void Contour::getNormals(unsigned int startIndex, int length, float *out)
-{
-    for(int i = startIndex; i < length; i++) {
-        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
-        out[0] = p->m_normX;
-        out[1] = p->m_normY;
-        out += 2;
-    }
-}
-
-void Contour::getMiters(unsigned int startIndex, int length, float *out)
-{
-    for(int i = startIndex; i < length; i++) {
-        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
-        out[0] = p->m_miterX;
-        out[1] = p->m_miterY;
-        out += 2;
-    }
-}
-
-void Contour::getDotPrValues(unsigned int startIndex, int length, float *out)
-{
-    for(int i = startIndex; i < length; i++) {
-        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
-        *out = p->m_dotPr;
-        out++;
-    }
-}
-
-void Contour::getPositions(unsigned int startIndex, int length, float *out)
-{
-    for(int i = startIndex; i < length; i++) {
-        t2d2::Point *p = dynamic_cast<t2d2::Point*>((*this)[i]);
-        *out = p->m_position;
-        out++;
-    }
-}
-
-

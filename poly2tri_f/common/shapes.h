@@ -157,6 +157,9 @@ public:
 /// Constructor
 Triangle(Point& a, Point& b, Point& c);
 
+
+void *_extData;
+
 /// Flags to determine if an edge is a Constrained edge
 bool constrained_edge[3];
 /// Flags to determine if an edge is a Delauney edge
