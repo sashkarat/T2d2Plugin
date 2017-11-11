@@ -63,7 +63,7 @@ void t2d2::Triangle::computeUV(t2d2::PointPtr p, t2d2::TrianglePtr tri, unsigned
 
     TrianglePtr baseT = findTriangle(p, tri, triNum);
     if (baseT == nullptr) {
-        Log(ltError)<<__FUNCTION__<<"base tri not found: "<<*p;
+        Log(ltError)<<__FUNCTION__<<"base tri not found: ";
         return;
     }
 

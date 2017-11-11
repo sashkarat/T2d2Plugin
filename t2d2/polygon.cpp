@@ -836,8 +836,8 @@ void Polygon::generateFullBorder(ClipperLib::Path &path, float wDelta, float oDe
     ClipperLib::Path &wSolP = wSol[0];
     ClipperLib::Path &oSolP = oSol[0];
 
-    t2d2::util::cl::savePath(wSolP, "w://tmp//_0_wsolP.path");
-    t2d2::util::cl::savePath(oSolP, "w://tmp//_0_osolP.path");
+//    t2d2::util::cl::savePath(wSolP, "w://tmp//_0_wsolP.path");
+//    t2d2::util::cl::savePath(oSolP, "w://tmp//_0_osolP.path");
 
     int zidxW = t2d2::util::cl::findNearest(wSolP, zeroPoint, 1e30);
     if (zidxW < 0) {
@@ -861,7 +861,7 @@ void Polygon::generateFullBorder(ClipperLib::Path &path, float wDelta, float oDe
 
     generateZeroClipPath(zO, zW, (wDelta < oDelta),  zpCtrlPoints, zpClPath);
 
-    t2d2::util::cl::savePath(zpClPath, "w://tmp//_0_zpClPath.path");
+//    t2d2::util::cl::savePath(zpClPath, "w://tmp//_0_zpClPath.path");
 
     ClipperLib::Clipper cl;
     cl.StrictlySimple(true);
@@ -915,9 +915,9 @@ void Polygon::generateFullBorder(ClipperLib::Path &path, float wDelta, float oDe
     cl.AddPath(oSolP, ClipperLib::ptSubject, true);
     cl.AddPath(zpClPath, ClipperLib::ptClip, true);
 
-    t2d2::util::cl::savePath(wSolP, "w://tmp//__wsolP.path");
-    t2d2::util::cl::savePath(oSolP, "w://tmp//__osolP.path");
-    t2d2::util::cl::savePath(zpClPath, "w://tmp//__zpClPath.path");
+//    t2d2::util::cl::savePath(wSolP, "w://tmp//__wsolP.path");
+//    t2d2::util::cl::savePath(oSolP, "w://tmp//__osolP.path");
+//    t2d2::util::cl::savePath(zpClPath, "w://tmp//__zpClPath.path");
 
     cl.Execute(ClipperLib::ctDifference, sol);
 
